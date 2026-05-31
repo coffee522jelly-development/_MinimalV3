@@ -11,6 +11,13 @@
 
   let isOpen = $derived(openNodes[node.id]);
   let hasChildren = $derived(node.children && node.children.length > 0);
+
+  function handleClick(e: MouseEvent) {
+    if (hasChildren) {
+      e.preventDefault();
+      onToggle(node.id);
+    }
+  }
 </script>
 
 <div class="select-none">
@@ -19,31 +26,31 @@
       "flex items-center gap-2 py-1 px-2 rounded-md hover:bg-muted transition-colors cursor-pointer group",
       level > 0 && "ml-4 border-l pl-4"
     )}
-    onclick={() => hasChildren && onToggle(node.id)}
+    onclick={handleClick}
     role="button"
     tabindex="0"
-    onkeydown={(e) => e.key === 'Enter' && hasChildren && onToggle(node.id)}
+    onkeydown={(e) => e.key === 'Enter' && handleClick(e as any)}
   >
     {#if hasChildren}
       <ChevronRight class={cn("h-3 w-3 transition-transform", isOpen && "rotate-90")} />
-      {#if isOpen}
-        <FolderOpen class="h-4 w-4 text-primary" />
-      {:else}
-        <Folder class="h-4 w-4 text-primary" />
-      {/if}
+      <Folder class={cn("h-4 w-4", isOpen ? "text-primary" : "text-muted-foreground")} />
     {:else}
       <div class="w-3"></div>
       <Folder class="h-4 w-4 text-muted-foreground" />
     {/if}
 
-    <a href="/category/{node.slug}" class="flex-1 group-hover:text-primary">
+    <a
+      href="/category/{node.slug}"
+      class="flex-1 group-hover:text-primary"
+      onclick={(e) => hasChildren && e.stopPropagation()}
+    >
       {node.name}
       <span class="text-[10px] text-muted-foreground ml-1">({node.count})</span>
     </a>
   </div>
 
   {#if hasChildren && isOpen}
-    <div class="animate-in fade-in slide-in-from-left-2 duration-200">
+    <div class="animate-in fade-in slide-in-from-left-1 duration-200">
       {#each node.children as child}
         <CategoryNode node={child} level={level + 1} {openNodes} {onToggle} />
       {/each}

@@ -14,14 +14,35 @@
   let settings = $state<any>(null);
 
   onMount(async () => {
-    fetchPosts();
+    fetchData();
   });
 
-  async function fetchPosts() {
+  $effect(() => {
+    if (slug) fetchData();
+  });
+
+  async function fetchData() {
     loading = true;
     try {
+      let endpoint = '/wp-json/wp/v2/posts?_embed';
+
+      // Handle category filtering
+      if (location.pathname.startsWith('/category/')) {
+        const catRes = await fetch(`/wp-json/wp/v2/categories?slug=${slug}`);
+        const cats = await catRes.json();
+        if (cats.length > 0) {
+          endpoint += `&categories=${cats[0].id}`;
+        }
+      } else if (location.pathname.startsWith('/tag/')) {
+        const tagRes = await fetch(`/wp-json/wp/v2/tags?slug=${slug}`);
+        const tags = await tagRes.json();
+        if (tags.length > 0) {
+          endpoint += `&tags=${tags[0].id}`;
+        }
+      }
+
       const [pRes, sRes] = await Promise.all([
-        fetch('/wp-json/wp/v2/posts?_embed'),
+        fetch(endpoint),
         fetch('/wp-json/me/v1/settings')
       ]);
       posts = await pRes.json();
@@ -60,21 +81,21 @@
 <div class="container py-10">
   <div class="flex flex-col md:flex-row justify-between items-start md:items-center gap-4 mb-8">
     <div class="flex flex-wrap gap-2">
-      <Button variant={filter === 'all' ? 'default' : 'outline'} size="sm" on:click={() => filter = 'all'}>All</Button>
-      <Button variant={filter === 'standard' ? 'default' : 'outline'} size="sm" on:click={() => filter = 'standard'}>Tech</Button>
-      <Button variant={filter === 'app' ? 'default' : 'outline'} size="sm" on:click={() => filter = 'app'}>Apps</Button>
-      <Button variant={filter === 'release' ? 'default' : 'outline'} size="sm" on:click={() => filter = 'release'}>Release</Button>
-      <Button variant={filter === 'diary' ? 'default' : 'outline'} size="sm" on:click={() => filter = 'diary'}>Diary</Button>
+      <Button variant={filter === 'all' ? 'default' : 'outline'} size="sm" onclick={() => filter = 'all'}>All</Button>
+      <Button variant={filter === 'standard' ? 'default' : 'outline'} size="sm" onclick={() => filter = 'standard'}>Tech</Button>
+      <Button variant={filter === 'app' ? 'default' : 'outline'} size="sm" onclick={() => filter = 'app'}>Apps</Button>
+      <Button variant={filter === 'release' ? 'default' : 'outline'} size="sm" onclick={() => filter = 'release'}>Release</Button>
+      <Button variant={filter === 'diary' ? 'default' : 'outline'} size="sm" onclick={() => filter = 'diary'}>Diary</Button>
     </div>
 
     <div class="flex items-center gap-2 bg-muted p-1 rounded-md">
-      <Button variant={columns === 1 ? 'background' : 'ghost'} size="icon" class="h-8 w-8" on:click={() => setColumns(1)}>
+      <Button variant={columns === 1 ? 'background' : 'ghost'} size="icon" class="h-8 w-8" onclick={() => setColumns(1)}>
         <List class="h-4 w-4" />
       </Button>
-      <Button variant={columns === 2 ? 'background' : 'ghost'} size="icon" class="h-8 w-8" on:click={() => setColumns(2)}>
+      <Button variant={columns === 2 ? 'background' : 'ghost'} size="icon" class="h-8 w-8" onclick={() => setColumns(2)}>
         <Columns class="h-4 w-4" />
       </Button>
-      <Button variant={columns === 4 ? 'background' : 'ghost'} size="icon" class="h-8 w-8" on:click={() => setColumns(4)}>
+      <Button variant={columns === 4 ? 'background' : 'ghost'} size="icon" class="h-8 w-8" onclick={() => setColumns(4)}>
         <Grid3X3 class="h-4 w-4" />
       </Button>
     </div>
