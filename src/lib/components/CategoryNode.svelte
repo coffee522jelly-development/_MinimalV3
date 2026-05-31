@@ -2,13 +2,15 @@
   import { Folder, FolderOpen, ChevronRight } from '@lucide/svelte';
   import { cn } from '$lib/utils';
 
-  export let node: any;
-  export let level: number = 0;
-  export let openNodes: Record<number, boolean>;
-  export let onToggle: (id: number) => void;
+  let { node, level = 0, openNodes, onToggle } = $props<{
+    node: any;
+    level?: number;
+    openNodes: Record<number, boolean>;
+    onToggle: (id: number) => void;
+  }>();
 
-  $: isOpen = openNodes[node.id];
-  $: hasChildren = node.children && node.children.length > 0;
+  let isOpen = $derived(openNodes[node.id]);
+  let hasChildren = $derived(node.children && node.children.length > 0);
 </script>
 
 <div class="select-none">
@@ -17,10 +19,10 @@
       "flex items-center gap-2 py-1 px-2 rounded-md hover:bg-muted transition-colors cursor-pointer group",
       level > 0 && "ml-4 border-l pl-4"
     )}
-    on:click={() => hasChildren && onToggle(node.id)}
+    onclick={() => hasChildren && onToggle(node.id)}
     role="button"
     tabindex="0"
-    on:keydown={(e) => e.key === 'Enter' && hasChildren && onToggle(node.id)}
+    onkeydown={(e) => e.key === 'Enter' && hasChildren && onToggle(node.id)}
   >
     {#if hasChildren}
       <ChevronRight class={cn("h-3 w-3 transition-transform", isOpen && "rotate-90")} />
@@ -43,7 +45,7 @@
   {#if hasChildren && isOpen}
     <div class="animate-in fade-in slide-in-from-left-2 duration-200">
       {#each node.children as child}
-        <svelte:self node={child} level={level + 1} {openNodes} {onToggle} />
+        <CategoryNode node={child} level={level + 1} {openNodes} {onToggle} />
       {/each}
     </div>
   {/if}

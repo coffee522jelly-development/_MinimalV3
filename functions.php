@@ -36,46 +36,13 @@ function minimal_engineer_scripts() {
         }
 
         if ( isset( $manifest['index.html']['css'] ) ) {
-            foreach ( $manifest['index.html']['css'] as $css_file ) {
-                wp_enqueue_style( 'minimal-engineer-css', get_template_directory_uri() . '/dist/' . $css_file );
+            foreach ( $manifest['index.html']['css'] as $index => $css_file ) {
+                wp_enqueue_style( 'minimal-engineer-css-' . $index, get_template_directory_uri() . '/dist/' . $css_file, array(), null );
             }
         }
     }
 }
 add_action( 'wp_enqueue_scripts', 'minimal_engineer_scripts' );
-
-/**
- * Register Metadata
- */
-function minimal_engineer_register_meta() {
-    $post_meta_fields = array(
-        '_me_template_type' => 'string', // 'standard', 'app', 'release', 'diary'
-        '_me_app_subtitle' => 'string',
-        '_me_app_description' => 'string',
-        '_me_app_link_web' => 'string',
-        '_me_app_link_github' => 'string',
-        '_me_app_link_appstore' => 'string',
-        '_me_app_link_googleplay' => 'string',
-        '_me_app_logo_id' => 'integer',
-        '_me_app_screenshots' => 'string',
-        '_me_app_price' => 'string',
-        '_me_app_os' => 'string',
-        '_me_app_status' => 'string',
-        '_me_release_version' => 'string',
-        '_me_release_date' => 'string',
-        '_me_diary_date' => 'string',
-        '_me_diary_hours' => 'string',
-    );
-
-    foreach ( $post_meta_fields as $field => $type ) {
-        register_post_meta( 'post', $field, array(
-            'show_in_rest' => true,
-            'single' => true,
-            'type' => $type,
-        ) );
-    }
-}
-add_action( 'init', 'minimal_engineer_register_meta' );
 
 // Filter to allow REST API to return more data
 add_filter( 'rest_prepare_post', 'minimal_engineer_rest_prepare_post', 10, 3 );

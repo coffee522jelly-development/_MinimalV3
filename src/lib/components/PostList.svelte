@@ -5,28 +5,23 @@
   import { Button } from './ui/button';
   import { List, Columns, Grid3X3, Clock } from '@lucide/svelte';
 
-  export let slug: string = ""; // For category/tag filtering
+  let { slug = "" } = $props<{ slug?: string }>();
 
-  let posts: any[] = [];
-  let loading = true;
-  let columns = 1;
-  let filter = 'all';
-  let settings: any = null;
+  let posts = $state<any[]>([]);
+  let loading = $state(true);
+  let columns = $state(1);
+  let filter = $state('all');
+  let settings = $state<any>(null);
 
   onMount(async () => {
     fetchPosts();
   });
 
-  $: if (slug) fetchPosts();
-
   async function fetchPosts() {
     loading = true;
     try {
-      let url = '/wp-json/wp/v2/posts?_embed';
-      // Basic implementation for category/tag filtering if needed
-
       const [pRes, sRes] = await Promise.all([
-        fetch(url),
+        fetch('/wp-json/wp/v2/posts?_embed'),
         fetch('/wp-json/me/v1/settings')
       ]);
       posts = await pRes.json();
@@ -50,16 +45,15 @@
     localStorage.setItem('listColumns', n.toString());
   }
 
-  $: filteredPosts = posts.filter(post => {
+  let filteredPosts = $derived(posts.filter(post => {
     if (filter === 'all') return true;
     const type = post.meta?._me_template_type || 'standard';
     return type === filter;
-  });
+  }));
 
   function getReadingTime(content: string) {
     const text = content.replace(/<[^>]*>/g, '');
-    const minutes = Math.ceil(text.length / 500);
-    return minutes;
+    return Math.ceil(text.length / 500);
   }
 </script>
 

@@ -3,32 +3,37 @@
   import { Folder } from '@lucide/svelte';
   import CategoryNode from './CategoryNode.svelte';
 
-  let categories: any[] = [];
-  let openNodes: Record<number, boolean> = {};
+  let categories = $state<any[]>([]);
+  let openNodes = $state<Record<number, boolean>>({});
 
   onMount(async () => {
     try {
-      const res = await fetch('/wp-json/wp/v2/categories?per_page=100');
+      const res = await fetch('/wp-json/wp/v2/categories?per_page=100&orderby=name&order=asc');
       categories = await res.json();
     } catch (e) {
       console.error(e);
     }
   });
 
-  function getHierarchicalCategories(parentId = 0, level = 0) {
+  function buildTree(parentId = 0, level = 0) {
     if (level >= 3) return [];
     return categories
       .filter(cat => cat.parent === parentId)
       .map(cat => ({
         ...cat,
-        children: getHierarchicalCategories(cat.id, level + 1)
+        children: buildTree(cat.id, level + 1)
       }));
   }
 
-  $: tree = getHierarchicalCategories();
+  let tree = $derived(buildTree());
 
   function toggleNode(id: number) {
-    openNodes[id] = !openNodes[id];
+    if (openNodes[id]) {
+      delete openNodes[id];
+    } else {
+      openNodes[id] = true;
+    }
+    // Svelte 5 state is reactive, but re-assigning ensures trigger if needed for Record
     openNodes = { ...openNodes };
   }
 </script>
