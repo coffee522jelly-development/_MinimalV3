@@ -1,5 +1,5 @@
 <script lang="ts">
-  import { Tag, Calendar } from 'lucide-svelte';
+  import { Tag, Calendar } from '@lucide/svelte';
   import { Badge } from '../ui/badge';
 
   export let post: any;

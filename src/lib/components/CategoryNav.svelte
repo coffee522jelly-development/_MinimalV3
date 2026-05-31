@@ -1,0 +1,47 @@
+<script lang="ts">
+  import { onMount } from 'svelte';
+  import { Folder } from '@lucide/svelte';
+  import CategoryNode from './CategoryNode.svelte';
+
+  let categories: any[] = [];
+  let openNodes: Record<number, boolean> = {};
+
+  onMount(async () => {
+    try {
+      const res = await fetch('/wp-json/wp/v2/categories?per_page=100');
+      categories = await res.json();
+    } catch (e) {
+      console.error(e);
+    }
+  });
+
+  function getHierarchicalCategories(parentId = 0, level = 0) {
+    if (level >= 3) return [];
+    return categories
+      .filter(cat => cat.parent === parentId)
+      .map(cat => ({
+        ...cat,
+        children: getHierarchicalCategories(cat.id, level + 1)
+      }));
+  }
+
+  $: tree = getHierarchicalCategories();
+
+  function toggleNode(id: number) {
+    openNodes[id] = !openNodes[id];
+    openNodes = { ...openNodes };
+  }
+</script>
+
+<div class="font-mono text-sm bg-muted/20 rounded-lg border p-4">
+  <div class="flex items-center gap-2 mb-4 pb-2 border-b">
+    <Folder class="h-4 w-4 text-primary" />
+    <span class="font-bold">Categories</span>
+  </div>
+
+  <div class="space-y-1">
+    {#each tree as node}
+      <CategoryNode {node} level={0} {openNodes} onToggle={toggleNode} />
+    {/each}
+  </div>
+</div>

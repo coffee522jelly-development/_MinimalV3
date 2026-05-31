@@ -1,6 +1,6 @@
 <script lang="ts">
   import { onMount } from 'svelte';
-  import { Check, Copy } from 'lucide-svelte';
+  import { Check, Copy } from '@lucide/svelte';
   import { Button } from './ui/button';
   import Prism from 'prismjs';
   import 'prismjs/components/prism-typescript';

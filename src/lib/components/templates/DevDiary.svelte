@@ -1,5 +1,5 @@
 <script lang="ts">
-  import { Book, Calendar, Clock } from 'lucide-svelte';
+  import { Book, Calendar, Clock } from '@lucide/svelte';
   export let post: any;
   $: meta = post.meta || {};
 </script>

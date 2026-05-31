@@ -1,5 +1,5 @@
 <script lang="ts">
-  import { Plus, ArrowUp, LayoutGrid, Folder, User, Mail } from 'lucide-svelte';
+  import { Plus, ArrowUp, LayoutGrid, Folder, User, Mail } from '@lucide/svelte';
   import { Button } from './ui/button';
   import { cn } from '$lib/utils';
 

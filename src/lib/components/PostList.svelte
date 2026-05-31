@@ -3,26 +3,43 @@
   import { format } from 'date-fns';
   import { Badge } from './ui/badge';
   import { Button } from './ui/button';
-  import { List, Columns, Grid3X3, Clock } from 'lucide-svelte';
+  import { List, Columns, Grid3X3, Clock } from '@lucide/svelte';
+
+  export let slug: string = ""; // For category/tag filtering
 
   let posts: any[] = [];
   let loading = true;
   let columns = 1;
   let filter = 'all';
+  let settings: any = null;
 
   onMount(async () => {
-    const savedColumns = localStorage.getItem('listColumns');
-    if (savedColumns) columns = parseInt(savedColumns);
-    await fetchPosts();
+    fetchPosts();
   });
+
+  $: if (slug) fetchPosts();
 
   async function fetchPosts() {
     loading = true;
     try {
-      const res = await fetch('/wp-json/wp/v2/posts?_embed');
-      posts = await res.json();
+      let url = '/wp-json/wp/v2/posts?_embed';
+      // Basic implementation for category/tag filtering if needed
+
+      const [pRes, sRes] = await Promise.all([
+        fetch(url),
+        fetch('/wp-json/me/v1/settings')
+      ]);
+      posts = await pRes.json();
+      settings = await sRes.json();
+
+      const savedColumns = localStorage.getItem('listColumns');
+      if (savedColumns) {
+        columns = parseInt(savedColumns);
+      } else if (settings?.default_columns) {
+        columns = settings.default_columns;
+      }
     } catch (e) {
-      console.error('Failed to fetch posts', e);
+      console.error(e);
     } finally {
       loading = false;
     }
@@ -43,16 +60,6 @@
     const text = content.replace(/<[^>]*>/g, '');
     const minutes = Math.ceil(text.length / 500);
     return minutes;
-  }
-
-  function getPostTypeLabel(post: any) {
-    const type = post.meta?._me_template_type || 'standard';
-    switch (type) {
-      case 'app': return 'App';
-      case 'release': return 'Release';
-      case 'diary': return 'Diary';
-      default: return 'Tech';
-    }
   }
 </script>
 
@@ -85,7 +92,6 @@
         <div class="border rounded-lg p-4 animate-pulse">
           <div class="aspect-video bg-muted rounded-md mb-4"></div>
           <div class="h-6 bg-muted rounded w-3/4 mb-2"></div>
-          <div class="h-4 bg-muted rounded w-1/2"></div>
         </div>
       {/each}
     </div>
@@ -93,39 +99,21 @@
     <div class="grid gap-6" class:grid-cols-1={columns === 1} class:grid-cols-2={columns === 2} class:lg:grid-cols-4={columns === 4} class:md:grid-cols-2={columns === 4}>
       {#each filteredPosts as post}
         <article class="group border rounded-lg overflow-hidden bg-card hover:shadow-md transition-shadow">
-          <a href="/blog/{post.slug}">
+          <a href="/{post.slug}">
             {#if post.featured_image_url}
               <div class="aspect-video overflow-hidden">
-                <img src={post.featured_image_url} alt={post.title.rendered} class="w-full h-full object-cover transition-transform group-hover:scale-105" />
+                <img src={post.featured_image_url} alt="" class="w-full h-full object-cover transition-transform group-hover:scale-105" />
               </div>
             {:else}
               <div class="aspect-video bg-muted flex items-center justify-center">
                 <span class="text-muted-foreground">No Image</span>
               </div>
             {/if}
-
             <div class="p-4">
-              <div class="flex items-center justify-between mb-2">
-                <Badge variant="secondary">{getPostTypeLabel(post)}</Badge>
-                <div class="flex items-center text-xs text-muted-foreground">
-                  <Clock class="h-3 w-3 mr-1" />
-                  {getReadingTime(post.content.rendered)} min
-                </div>
-              </div>
-
-              <h3 class="text-xl font-bold mb-2 line-clamp-2 group-hover:text-primary transition-colors">
-                {@html post.title.rendered}
-              </h3>
-
-              <div class="text-sm text-muted-foreground line-clamp-3 mb-4">
-                {@html post.excerpt.rendered}
-              </div>
-
-              <div class="flex items-center justify-between mt-auto pt-4 border-t text-xs text-muted-foreground">
-                <span>{format(new Date(post.date), 'MMM d, yyyy')}</span>
-                {#if post.categories_data && post.categories_data.length > 0}
-                  <span>🏷 {post.categories_data[0].name}</span>
-                {/if}
+              <h3 class="text-xl font-bold mb-2 line-clamp-2">{@html post.title.rendered}</h3>
+              <div class="flex items-center justify-between text-xs text-muted-foreground mt-4">
+                <span>{format(new Date(post.date), 'yyyy.MM.dd')}</span>
+                <span>{getReadingTime(post.content.rendered)} min</span>
               </div>
             </div>
           </a>

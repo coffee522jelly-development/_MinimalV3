@@ -1,6 +1,6 @@
 <script lang="ts">
   import { Button } from './ui/button';
-  import { Send } from 'lucide-svelte';
+  import { Send } from '@lucide/svelte';
 
   let name = "";
   let email = "";
