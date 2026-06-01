@@ -5,7 +5,7 @@
   import { Button } from './ui/button';
   import { List, Columns, Grid3X3, Clock } from '@lucide/svelte';
 
-  let { slug = "" } = $props<{ slug?: string }>();
+  let { slug = "", listType = "all" } = $props<{ slug?: string, listType?: string }>();
 
   let posts = $state<any[]>([]);
   let loading = $state(true);
@@ -18,7 +18,7 @@
   });
 
   $effect(() => {
-    if (slug) fetchData();
+    if (slug || listType) fetchData();
   });
 
   async function fetchData() {
@@ -26,19 +26,14 @@
     try {
       let endpoint = '/wp-json/wp/v2/posts?_embed';
 
-      // Handle category filtering
-      if (location.pathname.startsWith('/category/')) {
+      if (listType === 'category' && slug) {
         const catRes = await fetch(`/wp-json/wp/v2/categories?slug=${slug}`);
         const cats = await catRes.json();
-        if (cats.length > 0) {
-          endpoint += `&categories=${cats[0].id}`;
-        }
-      } else if (location.pathname.startsWith('/tag/')) {
+        if (cats.length > 0) endpoint += `&categories=${cats[0].id}`;
+      } else if (listType === 'tag' && slug) {
         const tagRes = await fetch(`/wp-json/wp/v2/tags?slug=${slug}`);
         const tags = await tagRes.json();
-        if (tags.length > 0) {
-          endpoint += `&tags=${tags[0].id}`;
-        }
+        if (tags.length > 0) endpoint += `&tags=${tags[0].id}`;
       }
 
       const [pRes, sRes] = await Promise.all([

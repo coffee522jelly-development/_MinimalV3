@@ -78,7 +78,14 @@
       </div>
       <aside class="hidden lg:block space-y-8">
         <CategoryNav />
-        <div class="sticky top-24"><TOC content={post.content.rendered} /></div>
+        <div class="sticky top-24 space-y-6">
+          <TOC content={post.content.rendered} />
+          {#if post.type === 'post'}
+            <div class="pt-6 border-t">
+              <ReadingTime content={post.content.rendered} />
+            </div>
+          {/if}
+        </div>
       </aside>
     </div>
   </article>

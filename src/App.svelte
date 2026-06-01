@@ -20,12 +20,21 @@
       <Route path="/">
          <PostList />
       </Route>
-      <Route path="/blog" component={PostList} />
-      <Route path="/sitemap" component={Sitemap} />
-      <Route path="/contact" component={ContactForm} />
-      <Route path="/category/:slug" component={PostList} />
-      <Route path="/tag/:slug" component={PostList} />
-      <!-- Match any other slug as a post or page -->
+      <Route path="/blog">
+         <PostList />
+      </Route>
+      <Route path="/category/:slug" let:params>
+         <PostList slug={params.slug} listType="category" />
+      </Route>
+      <Route path="/tag/:slug" let:params>
+         <PostList slug={params.slug} listType="tag" />
+      </Route>
+      <Route path="/sitemap">
+         <Sitemap />
+      </Route>
+      <Route path="/contact">
+         <ContactForm />
+      </Route>
       <Route path="/:slug" let:params>
          <PostDetail slug={params.slug} />
       </Route>
