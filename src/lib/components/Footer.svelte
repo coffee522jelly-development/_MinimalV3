@@ -1,27 +1,22 @@
 <script lang="ts">
   import { onMount } from 'svelte';
 
-  let pages = $state<any[]>([]);
+  let menuItems = $state<any[]>([]);
   let settings = $state<any>(null);
   let currentYear = new Date().getFullYear();
 
   onMount(async () => {
     try {
-      const [pRes, sRes] = await Promise.all([
-        fetch('/wp-json/wp/v2/pages?per_page=100&orderby=menu_order&order=asc'),
+      const [mRes, sRes] = await Promise.all([
+        fetch('/wp-json/me/v1/menu'),
         fetch('/wp-json/me/v1/settings')
       ]);
-      pages = await pRes.json();
+      menuItems = await mRes.json();
       settings = await sRes.json();
     } catch (e) {
       console.error(e);
     }
   });
-
-  let hierarchicalPages = $derived(pages.filter(p => p.parent === 0).map(parent => ({
-    ...parent,
-    children: pages.filter(child => child.parent === parent.id)
-  })));
 </script>
 
 <footer class="border-t bg-muted/50">
@@ -33,16 +28,16 @@
       </div>
 
       <div>
-        <h4 class="text-sm font-semibold mb-4">Pages</h4>
+        <h4 class="text-sm font-semibold mb-4">Navigation</h4>
         <ul class="space-y-3 text-sm text-muted-foreground">
           <li><a href="/" class="hover:text-primary transition-colors">Home</a></li>
-          {#each hierarchicalPages as page}
+          {#each menuItems as item}
             <li>
-              <a href="/{page.slug}" class="hover:text-primary transition-colors font-medium text-foreground">{page.title.rendered}</a>
-              {#if page.children.length > 0}
+              <a href={item.url} class="hover:text-primary transition-colors font-medium text-foreground">{item.title}</a>
+              {#if item.children && item.children.length > 0}
                 <ul class="pl-4 mt-2 space-y-1 border-l">
-                  {#each page.children as child}
-                    <li><a href="/{child.slug}" class="hover:text-primary transition-colors">{child.title.rendered}</a></li>
+                  {#each item.children as child}
+                    <li><a href={child.url} class="hover:text-primary transition-colors">{child.title}</a></li>
                   {/each}
                 </ul>
               {/if}

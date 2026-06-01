@@ -18,6 +18,12 @@ if ( ! function_exists( 'minimal_engineer_setup' ) ) :
         ) );
         add_theme_support( 'customize-selective-refresh-widgets' );
         add_theme_support( 'responsive-embeds' );
+
+        // Register Menus
+        register_nav_menus( array(
+            'primary' => 'Primary Menu',
+            'footer'  => 'Footer Menu',
+        ) );
     }
 endif;
 add_action( 'after_setup_theme', 'minimal_engineer_setup' );
@@ -136,16 +142,13 @@ function minimal_engineer_customize_register( $wp_customize ) {
     $wp_customize->add_setting( 'me_code_font_size', array( 'default' => '14', 'transport' => 'refresh' ) );
     $wp_customize->add_control( 'me_code_font_size', array( 'label' => 'Font Size (px)', 'section' => 'me_code_block', 'type' => 'number' ) );
 
-    // Labels Section
     $wp_customize->add_section( 'me_labels', array( 'title' => 'UI Labels', 'priority' => 34 ) );
-
     $labels = array(
         'me_label_categories' => array('default' => 'Categories', 'label' => 'Categories Sidebar Label'),
         'me_label_toc' => array('default' => 'Table of Contents', 'label' => 'TOC Sidebar Label'),
         'me_label_article_info' => array('default' => 'Article Info', 'label' => 'Article Info Label'),
         'me_label_reading_time' => array('default' => 'Est. Read Time', 'label' => 'Reading Time Label'),
     );
-
     foreach ($labels as $id => $cfg) {
         $wp_customize->add_setting( $id, array( 'default' => $cfg['default'], 'transport' => 'refresh' ) );
         $wp_customize->add_control( $id, array( 'label' => $cfg['label'], 'section' => 'me_labels', 'type' => 'text' ) );
@@ -163,6 +166,9 @@ function minimal_engineer_customize_register( $wp_customize ) {
 }
 add_action( 'customize_register', 'minimal_engineer_customize_register' );
 
+/**
+ * REST API Extensions
+ */
 add_action( 'rest_api_init', function() {
     register_rest_route( 'me/v1', '/settings', array(
         'methods' => 'GET',
@@ -189,6 +195,45 @@ add_action( 'rest_api_init', function() {
                     'zenn' => get_theme_mod( 'me_sns_zenn' ),
                 )
             );
+        },
+        'permission_callback' => '__return_true'
+    ) );
+
+    register_rest_route( 'me/v1', '/menu', array(
+        'methods' => 'GET',
+        'callback' => function() {
+            $locations = get_nav_menu_locations();
+            $menu_id = isset( $locations['primary'] ) ? $locations['primary'] : null;
+            if ( ! $menu_id ) return array();
+
+            $items = wp_get_nav_menu_items( $menu_id );
+            $menu_tree = array();
+            $child_items = array();
+
+            foreach ( $items as $item ) {
+                if ( $item->menu_item_parent == 0 ) {
+                    $menu_tree[$item->ID] = array(
+                        'id' => $item->ID,
+                        'title' => $item->title,
+                        'url' => str_replace( home_url(), '', $item->url ),
+                        'children' => array()
+                    );
+                } else {
+                    $child_items[] = $item;
+                }
+            }
+
+            foreach ( $child_items as $child ) {
+                if ( isset( $menu_tree[$child->menu_item_parent] ) ) {
+                    $menu_tree[$child->menu_item_parent]['children'][] = array(
+                        'id' => $child->ID,
+                        'title' => $child->title,
+                        'url' => str_replace( home_url(), '', $child->url )
+                    );
+                }
+            }
+
+            return array_values( $menu_tree );
         },
         'permission_callback' => '__return_true'
     ) );
