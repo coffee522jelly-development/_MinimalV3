@@ -10,6 +10,7 @@
   import DevDiary from './templates/DevDiary.svelte';
   import SEO from './SEO.svelte';
   import CodeBlock from './CodeBlock.svelte';
+  import CategoryBadges from './CategoryBadges.svelte';
   import { Button } from './ui/button';
 
   let { slug } = $props<{ slug: string }>();
@@ -60,7 +61,6 @@
 
   function processCodeBlocks() {
     if (!contentEl) return;
-    // Only target pre blocks that haven't been processed yet
     const preBlocks = contentEl.querySelectorAll('pre:not([data-processed])');
     preBlocks.forEach((pre) => {
       const code = pre.querySelector('code');
@@ -70,7 +70,6 @@
       const langClass = Array.from(code.classList).find(c => c.startsWith('language-'));
       const language = langClass ? langClass.replace('language-', '') : 'javascript';
 
-      // Mark as processed to avoid double injection
       pre.setAttribute('data-processed', 'true');
       pre.style.display = 'none';
 
@@ -112,6 +111,9 @@
         </nav>
 
         <header class="mb-10 max-w-3xl">
+          {#if post.categories_data}
+            <CategoryBadges categories={post.categories_data} class="mb-6" />
+          {/if}
           <h1 class="text-4xl md:text-5xl font-bold mb-6">{@html post.title.rendered}</h1>
           <div class="flex flex-wrap items-center gap-6 text-sm text-muted-foreground border-b pb-6">
             <span>{format(new Date(post.date), 'yyyy.MM.dd')}</span>
@@ -127,6 +129,13 @@
           <div bind:this={contentEl} class="prose dark:prose-invert max-w-none prose-headings:scroll-mt-20 prose-pre:p-0">
             {@html post.content.rendered}
           </div>
+
+          {#if post.categories_data}
+            <footer class="mt-16 pt-8 border-t">
+              <p class="text-xs font-bold mb-4 uppercase tracking-widest text-muted-foreground">Posted in</p>
+              <CategoryBadges categories={post.categories_data} />
+            </footer>
+          {/if}
         </div>
       </article>
 

@@ -154,6 +154,20 @@ function minimal_engineer_customize_register( $wp_customize ) {
         $wp_customize->add_control( $id, array( 'label' => $cfg['label'], 'section' => 'me_labels', 'type' => 'text' ) );
     }
 
+    // FAB Settings
+    $wp_customize->add_section( 'me_fab', array( 'title' => 'FAB Settings', 'priority' => 36 ) );
+    $wp_customize->add_setting( 'me_fab_show_contact', array( 'default' => true, 'transport' => 'refresh' ) );
+    $wp_customize->add_control( 'me_fab_show_contact', array( 'label' => 'Show Contact in FAB', 'section' => 'me_fab', 'type' => 'checkbox' ) );
+
+    for ($i = 1; $i <= 4; $i++) {
+        $wp_customize->add_setting( "me_fab_page_$i", array( 'default' => '0', 'transport' => 'refresh' ) );
+        $wp_customize->add_control( "me_fab_page_$i", array(
+            'label' => "FAB Page Link $i",
+            'section' => 'me_fab',
+            'type' => 'dropdown-pages',
+        ) );
+    }
+
     $wp_customize->add_section( 'me_colors', array( 'title' => 'Theme Colors', 'priority' => 35 ) );
     $wp_customize->add_setting( 'me_primary_color', array( 'default' => '#18181b', 'transport' => 'refresh' ) );
     $wp_customize->add_control( new WP_Customize_Color_Control( $wp_customize, 'me_primary_color', array( 'label' => 'Primary Color', 'section' => 'me_colors' ) ) );
@@ -173,6 +187,18 @@ add_action( 'rest_api_init', function() {
     register_rest_route( 'me/v1', '/settings', array(
         'methods' => 'GET',
         'callback' => function() {
+            $fab_pages = array();
+            for ($i = 1; $i <= 4; $i++) {
+                $page_id = get_theme_mod( "me_fab_page_$i", 0 );
+                if ($page_id > 0) {
+                    $post = get_post($page_id);
+                    $fab_pages[] = array(
+                        'title' => $post->post_title,
+                        'url' => str_replace( home_url(), '', get_permalink($page_id) )
+                    );
+                }
+            }
+
             return array(
                 'logo_text' => get_theme_mod( 'me_logo_text', 'Minimal Engineer' ),
                 'default_columns' => (int) get_theme_mod( 'me_default_columns', 1 ),
@@ -186,6 +212,10 @@ add_action( 'rest_api_init', function() {
                     'toc' => get_theme_mod( 'me_label_toc', 'Table of Contents' ),
                     'article_info' => get_theme_mod( 'me_label_article_info', 'Article Info' ),
                     'reading_time' => get_theme_mod( 'me_label_reading_time', 'Est. Read Time' ),
+                ),
+                'fab' => array(
+                    'show_contact' => (bool) get_theme_mod( 'me_fab_show_contact', true ),
+                    'pages' => $fab_pages
                 ),
                 'sns' => array(
                     'github' => get_theme_mod( 'me_sns_github' ),

@@ -1,17 +1,36 @@
 <script lang="ts">
-  import { Plus, ArrowUp, LayoutGrid, Folder, User, Mail } from '@lucide/svelte';
+  import { onMount } from 'svelte';
+  import { Plus, ArrowUp, Mail, FileText } from '@lucide/svelte';
   import { Button } from './ui/button';
   import { cn } from '$lib/utils';
 
-  let isOpen = false;
+  let isOpen = $state(false);
+  let settings = $state<any>(null);
 
-  const actions = [
-    { icon: ArrowUp, label: 'Top', href: '#top' },
-    { icon: LayoutGrid, label: 'Apps', href: '/apps' },
-    { icon: Folder, label: 'Projects', href: '/projects' },
-    { icon: User, label: 'About', href: '/about' },
-    { icon: Mail, label: 'Contact', href: '/contact' },
-  ];
+  onMount(async () => {
+    try {
+      const res = await fetch('/wp-json/me/v1/settings');
+      settings = await res.json();
+    } catch (e) {
+      console.error(e);
+    }
+  });
+
+  let actions = $derived.by(() => {
+    const list = [{ icon: ArrowUp, label: 'Top', href: '#top', internal: false }];
+
+    if (settings?.fab?.pages) {
+      settings.fab.pages.forEach((p: any) => {
+        list.push({ icon: FileText, label: p.title, href: p.url, internal: true });
+      });
+    }
+
+    if (settings?.fab?.show_contact !== false) {
+      list.push({ icon: Mail, label: 'Contact', href: '/contact', internal: true });
+    }
+
+    return list;
+  });
 
   function toggle() {
     isOpen = !isOpen;
@@ -28,7 +47,7 @@
     variant="default"
     size="icon"
     class="h-14 w-14 rounded-full shadow-lg"
-    on:click={toggle}
+    onclick={toggle}
   >
     <Plus class={cn("h-6 w-6 transition-transform duration-200", isOpen && "rotate-45")} />
   </Button>
@@ -45,7 +64,7 @@
               variant="secondary"
               size="icon"
               class="h-12 w-12 rounded-full shadow-md"
-              on:click={scrollToTop}
+              onclick={scrollToTop}
             >
               <action.icon class="h-5 w-5" />
             </Button>
@@ -55,6 +74,7 @@
                 variant="secondary"
                 size="icon"
                 class="h-12 w-12 rounded-full shadow-md"
+                onclick={() => isOpen = false}
               >
                 <action.icon class="h-5 w-5" />
               </Button>
