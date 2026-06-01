@@ -1,21 +1,32 @@
 <script lang="ts">
-  import { onMount } from 'svelte';
+  import { onMount, tick } from 'svelte';
   import { cn } from '$lib/utils';
 
-  export let content: string;
+  let { content } = $props<{ content: string }>();
 
-  let headings: { id: string, text: string, level: number }[] = [];
-  let activeId = "";
+  let headings = $state<{ id: string, text: string, level: number }[]>([]);
+  let activeId = $state("");
 
   onMount(() => {
-    const tempDiv = document.createElement('div');
-    tempDiv.innerHTML = content;
-    const headingElements = tempDiv.querySelectorAll('h2, h3, h4');
+    updateHeadings();
+  });
+
+  $effect(() => {
+    if (content) {
+      tick().then(updateHeadings);
+    }
+  });
+
+  function updateHeadings() {
+    const headingElements = document.querySelectorAll('article .prose h2, article .prose h3, article .prose h4');
 
     headings = Array.from(headingElements).map((el, i) => {
-      const id = el.id || `heading-${i}`;
+      // Ensure element has an ID for linking
+      if (!el.id) {
+        el.id = `heading-${i}`;
+      }
       return {
-        id,
+        id: el.id,
         text: el.textContent || "",
         level: parseInt(el.tagName.substring(1))
       };
@@ -27,24 +38,41 @@
           activeId = entry.target.id;
         }
       });
-    }, { rootMargin: '0px 0px -80% 0px' });
-  });
+    }, { rootMargin: '-10% 0px -80% 0px' });
+
+    headingElements.forEach(el => observer.observe(el));
+    return () => observer.disconnect();
+  }
+
+  function scrollToHeading(e: MouseEvent, id: string) {
+    e.preventDefault();
+    const el = document.getElementById(id);
+    if (el) {
+      window.scrollTo({
+        top: el.offsetTop - 100,
+        behavior: 'smooth'
+      });
+      history.pushState(null, '', `#${id}`);
+    }
+  }
 </script>
 
 {#if headings.length > 0}
   <nav class="space-y-2 text-sm">
-    <p class="font-bold mb-4">Table of Contents</p>
-    <ul class="space-y-2 border-l-2 ml-1">
+    <p class="font-bold mb-4 uppercase tracking-wider text-xs text-muted-foreground">Table of Contents</p>
+    <ul class="space-y-2 border-l ml-1">
       {#each headings as heading}
         <li
           class={cn(
-            "pl-4 transition-colors hover:text-primary",
-            activeId === heading.id ? "border-l-2 border-primary -ml-[2px] text-primary font-medium" : "text-muted-foreground",
+            "pl-4 transition-colors hover:text-primary leading-snug",
+            activeId === heading.id ? "border-l-2 border-primary -ml-[1px] text-primary font-bold" : "text-muted-foreground",
             heading.level === 3 && "ml-4",
             heading.level === 4 && "ml-8"
           )}
         >
-          <a href="#{heading.id}">{heading.text}</a>
+          <a href="#{heading.id}" onclick={(e) => scrollToHeading(e, heading.id)}>
+            {heading.text}
+          </a>
         </li>
       {/each}
     </ul>
