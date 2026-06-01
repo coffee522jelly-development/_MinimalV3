@@ -9,12 +9,13 @@
     onToggle: (id: number) => void;
   }>();
 
-  let isOpen = $derived(openNodes[node.id]);
+  let isOpen = $derived(!!openNodes[node.id]);
   let hasChildren = $derived(node.children && node.children.length > 0);
 
-  function handleClick(e: MouseEvent) {
+  function handleToggle(e: MouseEvent) {
     if (hasChildren) {
       e.preventDefault();
+      e.stopPropagation();
       onToggle(node.id);
     }
   }
@@ -26,14 +27,18 @@
       "flex items-center gap-2 py-1 px-2 rounded-md hover:bg-muted transition-colors cursor-pointer group",
       level > 0 && "ml-4 border-l pl-4"
     )}
-    onclick={handleClick}
+    onclick={handleToggle}
     role="button"
     tabindex="0"
-    onkeydown={(e) => e.key === 'Enter' && handleClick(e as any)}
+    onkeydown={(e) => e.key === 'Enter' && handleToggle(e as any)}
   >
     {#if hasChildren}
-      <ChevronRight class={cn("h-3 w-3 transition-transform", isOpen && "rotate-90")} />
-      <Folder class={cn("h-4 w-4", isOpen ? "text-primary" : "text-muted-foreground")} />
+      <ChevronRight class={cn("h-3 w-3 transition-transform duration-200", isOpen && "rotate-90")} />
+      {#if isOpen}
+        <FolderOpen class="h-4 w-4 text-primary" />
+      {:else}
+        <Folder class="h-4 w-4 text-primary" />
+      {/if}
     {:else}
       <div class="w-3"></div>
       <Folder class="h-4 w-4 text-muted-foreground" />
@@ -41,8 +46,8 @@
 
     <a
       href="/category/{node.slug}"
-      class="flex-1 group-hover:text-primary"
-      onclick={(e) => hasChildren && e.stopPropagation()}
+      class="flex-1 group-hover:text-primary transition-colors"
+      onclick={(e) => e.stopPropagation()}
     >
       {node.name}
       <span class="text-[10px] text-muted-foreground ml-1">({node.count})</span>

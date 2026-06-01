@@ -35,11 +35,9 @@
       <Route path="/contact">
          <ContactForm />
       </Route>
-      <Route path="/:slug" let:params>
-         <PostDetail slug={params.slug} />
-      </Route>
-      <Route path="/blog/:slug" let:params>
-         <PostDetail slug={params.slug} />
+      <!-- Handling potentially multi-segment slugs for hierarchical pages -->
+      <Route path="/*" let:params>
+         <PostDetail slug={params['*']} />
       </Route>
     </Router>
   </main>

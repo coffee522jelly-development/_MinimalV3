@@ -1,7 +1,7 @@
 <script lang="ts">
   import { onMount } from 'svelte';
   import { format } from 'date-fns';
-  import { ChevronRight, Home } from '@lucide/svelte';
+  import { ChevronRight, Home, AlertCircle } from '@lucide/svelte';
   import ReadingTime from './ReadingTime.svelte';
   import TOC from './TOC.svelte';
   import CategoryNav from './CategoryNav.svelte';
@@ -9,6 +9,7 @@
   import ReleaseNotes from './templates/ReleaseNotes.svelte';
   import DevDiary from './templates/DevDiary.svelte';
   import SEO from './SEO.svelte';
+  import { Button } from './ui/button';
 
   let { slug } = $props<{ slug: string }>();
 
@@ -26,10 +27,15 @@
   async function fetchData() {
     loading = true;
     try {
-      let res = await fetch(`/wp-json/wp/v2/posts?slug=${slug}&_embed`);
+      // Handle hierarchical page slugs by taking the last segment if needed,
+      // or querying with the full path if WP supports it.
+      // WordPress REST API slug query works best with the actual slug of the target page.
+      const actualSlug = slug.split('/').filter(Boolean).pop() || slug;
+
+      let res = await fetch(`/wp-json/wp/v2/posts?slug=${actualSlug}&_embed`);
       let data = await res.json();
       if (data.length === 0) {
-        res = await fetch(`/wp-json/wp/v2/pages?slug=${slug}&_embed`);
+        res = await fetch(`/wp-json/wp/v2/pages?slug=${actualSlug}&_embed`);
         data = await res.json();
       }
       post = data.length > 0 ? data[0] : null;
@@ -90,5 +96,16 @@
     </div>
   </article>
 {:else}
-  <div class="container py-20 text-center"><h1 class="text-4xl font-bold mb-4">404</h1><p class="text-muted-foreground">Not found.</p></div>
+  <div class="container py-32 text-center max-w-lg mx-auto">
+    <div class="flex justify-center mb-6">
+       <div class="bg-destructive/10 p-4 rounded-full">
+         <AlertCircle class="h-12 w-12 text-destructive" />
+       </div>
+    </div>
+    <h1 class="text-4xl font-bold mb-4">404 - Not Found</h1>
+    <p class="text-muted-foreground mb-10 text-lg">Sorry, the page you are looking for does not exist or has been moved.</p>
+    <a href="/">
+       <Button variant="default" size="lg">Return to Home</Button>
+    </a>
+  </div>
 {/if}

@@ -4,11 +4,11 @@
   import { Button } from './ui/button';
   import { cn } from '$lib/utils';
 
-  let isDark = false;
-  let isMobileMenuOpen = false;
-  let pages: any[] = [];
-  let settings: any = { logo_text: 'Minimal Engineer' };
-  let openMenus: Record<number, boolean> = {};
+  let isDark = $state(false);
+  let isMobileMenuOpen = $state(false);
+  let pages = $state<any[]>([]);
+  let settings = $state<any>({ logo_text: 'Minimal Engineer' });
+  let openMenus = $state<Record<number, boolean>>({});
 
   onMount(async () => {
     isDark = document.documentElement.classList.contains('dark') ||
@@ -35,14 +35,13 @@
     localStorage.setItem('theme', isDark ? 'dark' : 'light');
   }
 
-  $: hierarchicalPages = pages.filter(p => p.parent === 0).map(parent => ({
+  let hierarchicalPages = $derived(pages.filter(p => p.parent === 0).map(parent => ({
     ...parent,
     children: pages.filter(child => child.parent === parent.id)
-  }));
+  })));
 
   function toggleMenu(id: number) {
     openMenus[id] = !openMenus[id];
-    openMenus = { ...openMenus };
   }
 </script>
 
@@ -73,15 +72,14 @@
             {/if}
           </div>
         {/each}
-        <a href="/blog" class="transition-colors hover:text-primary">Blog</a>
       </nav>
     </div>
 
     <div class="flex items-center gap-2">
-      <Button variant="ghost" size="icon" on:click={toggleTheme}>
+      <Button variant="ghost" size="icon" onclick={toggleTheme}>
         {#if isDark}<Sun class="h-5 w-5" />{:else}<Moon class="h-5 w-5" />{/if}
       </Button>
-      <Button variant="ghost" size="icon" class="md:hidden" on:click={() => isMobileMenuOpen = !isMobileMenuOpen}>
+      <Button variant="ghost" size="icon" class="md:hidden" onclick={() => isMobileMenuOpen = !isMobileMenuOpen}>
         {#if isMobileMenuOpen}<X class="h-5 w-5" />{:else}<Menu class="h-5 w-5" />{/if}
       </Button>
     </div>
@@ -91,13 +89,13 @@
 {#if isMobileMenuOpen}
   <div class="fixed inset-0 z-50 bg-background md:hidden pt-20 px-6 overflow-y-auto">
     <nav class="flex flex-col gap-4 text-lg font-medium pb-20">
-      <a href="/" on:click={() => isMobileMenuOpen = false}>Home</a>
+      <a href="/" onclick={() => isMobileMenuOpen = false}>Home</a>
       {#each hierarchicalPages as page}
         <div>
           <div class="flex items-center justify-between">
-            <a href="/{page.slug}" on:click={() => isMobileMenuOpen = false}>{page.title.rendered}</a>
+            <a href="/{page.slug}" onclick={() => isMobileMenuOpen = false}>{page.title.rendered}</a>
             {#if page.children.length > 0}
-              <Button variant="ghost" size="icon" on:click={() => toggleMenu(page.id)}>
+              <Button variant="ghost" size="icon" onclick={() => toggleMenu(page.id)}>
                 <ChevronRight class={cn("h-5 w-5 transition-transform", openMenus[page.id] && "rotate-90")} />
               </Button>
             {/if}
@@ -105,14 +103,13 @@
           {#if page.children.length > 0 && openMenus[page.id]}
             <div class="pl-4 mt-2 flex flex-col gap-2 border-l ml-2">
               {#each page.children as child}
-                <a href="/{child.slug}" class="text-base text-muted-foreground" on:click={() => isMobileMenuOpen = false}>{child.title.rendered}</a>
+                <a href="/{child.slug}" class="text-base text-muted-foreground" onclick={() => isMobileMenuOpen = false}>{child.title.rendered}</a>
               {/each}
             </div>
           {/if}
         </div>
       {/each}
-      <a href="/blog" on:click={() => isMobileMenuOpen = false}>Blog</a>
-      <a href="/contact" on:click={() => isMobileMenuOpen = false}>Contact</a>
+      <a href="/contact" onclick={() => isMobileMenuOpen = false}>Contact</a>
     </nav>
   </div>
 {/if}

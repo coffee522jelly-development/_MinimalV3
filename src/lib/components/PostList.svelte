@@ -3,7 +3,7 @@
   import { format } from 'date-fns';
   import { Badge } from './ui/badge';
   import { Button } from './ui/button';
-  import { List, Columns, Grid3X3, Clock } from '@lucide/svelte';
+  import { List, Columns, Grid3X3, Clock, Tag, Folder } from '@lucide/svelte';
 
   let { slug = "", listType = "all" } = $props<{ slug?: string, listType?: string }>();
 
@@ -12,6 +12,7 @@
   let columns = $state(1);
   let filter = $state('all');
   let settings = $state<any>(null);
+  let archiveTitle = $state("");
 
   onMount(async () => {
     fetchData();
@@ -23,17 +24,24 @@
 
   async function fetchData() {
     loading = true;
+    archiveTitle = "";
     try {
       let endpoint = '/wp-json/wp/v2/posts?_embed';
 
       if (listType === 'category' && slug) {
         const catRes = await fetch(`/wp-json/wp/v2/categories?slug=${slug}`);
         const cats = await catRes.json();
-        if (cats.length > 0) endpoint += `&categories=${cats[0].id}`;
+        if (cats.length > 0) {
+          endpoint += `&categories=${cats[0].id}`;
+          archiveTitle = cats[0].name;
+        }
       } else if (listType === 'tag' && slug) {
         const tagRes = await fetch(`/wp-json/wp/v2/tags?slug=${slug}`);
         const tags = await tagRes.json();
-        if (tags.length > 0) endpoint += `&tags=${tags[0].id}`;
+        if (tags.length > 0) {
+          endpoint += `&tags=${tags[0].id}`;
+          archiveTitle = tags[0].name;
+        }
       }
 
       const [pRes, sRes] = await Promise.all([
@@ -74,6 +82,20 @@
 </script>
 
 <div class="container py-10">
+  {#if archiveTitle}
+    <div class="flex items-center gap-3 mb-10 pb-6 border-b">
+      {#if listType === 'category'}
+        <Folder class="h-8 w-8 text-primary" />
+      {:else}
+        <Tag class="h-8 w-8 text-primary" />
+      {/if}
+      <div>
+        <span class="text-xs text-muted-foreground uppercase tracking-widest">{listType}</span>
+        <h1 class="text-3xl font-bold">{archiveTitle}</h1>
+      </div>
+    </div>
+  {/if}
+
   <div class="flex flex-col md:flex-row justify-between items-start md:items-center gap-4 mb-8">
     <div class="flex flex-wrap gap-2">
       <Button variant={filter === 'all' ? 'default' : 'outline'} size="sm" onclick={() => filter = 'all'}>All</Button>
@@ -104,6 +126,10 @@
           <div class="h-6 bg-muted rounded w-3/4 mb-2"></div>
         </div>
       {/each}
+    </div>
+  {:else if filteredPosts.length === 0}
+    <div class="py-20 text-center border rounded-2xl border-dashed">
+       <p class="text-muted-foreground">No posts found in this section.</p>
     </div>
   {:else}
     <div class="grid gap-6" class:grid-cols-1={columns === 1} class:grid-cols-2={columns === 2} class:lg:grid-cols-4={columns === 4} class:md:grid-cols-2={columns === 4}>
