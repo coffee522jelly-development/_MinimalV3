@@ -62,7 +62,7 @@
           {#each lines as _, i}<span>{i + 1}</span>{/each}
         </div>
       {/if}
-      <pre class="flex-1 !m-0 !p-0 !bg-transparent"><code class="language-{language}">{@html highlightedCode}</code></pre>
+      <pre data-processed="true" class="flex-1 !m-0 !p-0 !bg-transparent"><code class="language-{language}">{@html highlightedCode}</code></pre>
     </div>
   </div>
 </div>
