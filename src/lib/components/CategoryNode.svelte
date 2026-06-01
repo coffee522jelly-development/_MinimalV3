@@ -1,6 +1,7 @@
 <script lang="ts">
   import { Folder, FolderOpen, ChevronRight } from '@lucide/svelte';
   import { cn } from '$lib/utils';
+  import CategoryNode from './CategoryNode.svelte';
 
   let { node, level = 0, openNodes, onToggle } = $props<{
     node: any;

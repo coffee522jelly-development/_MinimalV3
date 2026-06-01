@@ -1,8 +1,8 @@
 <script lang="ts">
   import { onMount } from 'svelte';
 
-  let pages: any[] = [];
-  let settings: any = null;
+  let pages = $state<any[]>([]);
+  let settings = $state<any>(null);
   let currentYear = new Date().getFullYear();
 
   onMount(async () => {
@@ -18,10 +18,10 @@
     }
   });
 
-  $: hierarchicalPages = pages.filter(p => p.parent === 0).map(parent => ({
+  let hierarchicalPages = $derived(pages.filter(p => p.parent === 0).map(parent => ({
     ...parent,
     children: pages.filter(child => child.parent === parent.id)
-  }));
+  })));
 </script>
 
 <footer class="border-t bg-muted/50">
@@ -55,7 +55,7 @@
         <h4 class="text-sm font-semibold mb-4">Social</h4>
         <ul class="space-y-2 text-sm text-muted-foreground">
           {#each Object.entries(settings?.sns || {}) as [name, url]}
-            {#if url}<li><a href={url} target="_blank" rel="noopener" class="hover:text-primary transition-colors capitalize">{name}</a></li>{/if}
+            {#if url && typeof url === 'string'}<li><a href={url} target="_blank" rel="noopener" class="hover:text-primary transition-colors capitalize">{name}</a></li>{/if}
           {/each}
         </ul>
       </div>

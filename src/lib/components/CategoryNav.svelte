@@ -15,12 +15,23 @@
     }
   });
 
-  function buildTree(parentId = 0, level = 0) {
+  interface CategoryTreeItem {
+    id: number;
+    name: string;
+    slug: string;
+    count: number;
+    children: CategoryTreeItem[];
+  }
+
+  function buildTree(parentId = 0, level = 0): CategoryTreeItem[] {
     if (level >= 3) return [];
     return categories
       .filter(cat => cat.parent === parentId)
       .map(cat => ({
-        ...cat,
+        id: cat.id,
+        name: cat.name,
+        slug: cat.slug,
+        count: cat.count,
         children: buildTree(cat.id, level + 1)
       }));
   }
@@ -33,7 +44,6 @@
     } else {
       openNodes[id] = true;
     }
-    // Svelte 5 state is reactive, but re-assigning ensures trigger if needed for Record
     openNodes = { ...openNodes };
   }
 </script>
