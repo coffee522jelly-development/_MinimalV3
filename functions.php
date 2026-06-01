@@ -98,7 +98,6 @@ function minimal_engineer_rest_prepare_post( $data, $post, $request ) {
     $logo_id = get_post_meta( $post->ID, '_me_app_logo_id', true );
     $_data['app_logo_url'] = $logo_id ? wp_get_attachment_url( $logo_id ) : null;
 
-    // Explicitly add all our meta to the response for easier access
     $meta_fields = array(
         '_me_template_type', '_me_app_subtitle', '_me_app_description',
         '_me_app_link_web', '_me_app_link_github', '_me_app_link_appstore',
@@ -137,6 +136,21 @@ function minimal_engineer_customize_register( $wp_customize ) {
     $wp_customize->add_setting( 'me_code_font_size', array( 'default' => '14', 'transport' => 'refresh' ) );
     $wp_customize->add_control( 'me_code_font_size', array( 'label' => 'Font Size (px)', 'section' => 'me_code_block', 'type' => 'number' ) );
 
+    // Labels Section
+    $wp_customize->add_section( 'me_labels', array( 'title' => 'UI Labels', 'priority' => 34 ) );
+
+    $labels = array(
+        'me_label_categories' => array('default' => 'Categories', 'label' => 'Categories Sidebar Label'),
+        'me_label_toc' => array('default' => 'Table of Contents', 'label' => 'TOC Sidebar Label'),
+        'me_label_article_info' => array('default' => 'Article Info', 'label' => 'Article Info Label'),
+        'me_label_reading_time' => array('default' => 'Est. Read Time', 'label' => 'Reading Time Label'),
+    );
+
+    foreach ($labels as $id => $cfg) {
+        $wp_customize->add_setting( $id, array( 'default' => $cfg['default'], 'transport' => 'refresh' ) );
+        $wp_customize->add_control( $id, array( 'label' => $cfg['label'], 'section' => 'me_labels', 'type' => 'text' ) );
+    }
+
     $wp_customize->add_section( 'me_colors', array( 'title' => 'Theme Colors', 'priority' => 35 ) );
     $wp_customize->add_setting( 'me_primary_color', array( 'default' => '#18181b', 'transport' => 'refresh' ) );
     $wp_customize->add_control( new WP_Customize_Color_Control( $wp_customize, 'me_primary_color', array( 'label' => 'Primary Color', 'section' => 'me_colors' ) ) );
@@ -160,6 +174,12 @@ add_action( 'rest_api_init', function() {
                 'code_block' => array(
                     'bg_color' => get_theme_mod( 'me_code_bg', '#09090b' ),
                     'font_size' => get_theme_mod( 'me_code_font_size', '14' ),
+                ),
+                'labels' => array(
+                    'categories' => get_theme_mod( 'me_label_categories', 'Categories' ),
+                    'toc' => get_theme_mod( 'me_label_toc', 'Table of Contents' ),
+                    'article_info' => get_theme_mod( 'me_label_article_info', 'Article Info' ),
+                    'reading_time' => get_theme_mod( 'me_label_reading_time', 'Est. Read Time' ),
                 ),
                 'sns' => array(
                     'github' => get_theme_mod( 'me_sns_github' ),

@@ -17,6 +17,7 @@
   let post = $state<any>(null);
   let loading = $state(true);
   let contentEl = $state<HTMLElement | null>(null);
+  let settings = $state<any>(null);
 
   onMount(async () => {
     fetchData();
@@ -36,13 +37,19 @@
     loading = true;
     try {
       const actualSlug = slug.split('/').filter(Boolean).pop() || slug;
-      let res = await fetch(`/wp-json/wp/v2/posts?slug=${actualSlug}&_embed`);
-      let data = await res.json();
+      const [postRes, settingsRes] = await Promise.all([
+        fetch(`/wp-json/wp/v2/posts?slug=${actualSlug}&_embed`),
+        fetch('/wp-json/me/v1/settings')
+      ]);
+
+      let data = await postRes.json();
       if (data.length === 0) {
-        res = await fetch(`/wp-json/wp/v2/pages?slug=${actualSlug}&_embed`);
-        data = await res.json();
+        const pageRes = await fetch(`/wp-json/wp/v2/pages?slug=${actualSlug}&_embed`);
+        data = await pageRes.json();
       }
+
       post = data.length > 0 ? data[0] : null;
+      settings = await settingsRes.json();
     } catch (e) {
       console.error(e);
       post = null;
@@ -53,7 +60,8 @@
 
   function processCodeBlocks() {
     if (!contentEl) return;
-    const preBlocks = contentEl.querySelectorAll('pre');
+    // Only target pre blocks that haven't been processed yet
+    const preBlocks = contentEl.querySelectorAll('pre:not([data-processed])');
     preBlocks.forEach((pre) => {
       const code = pre.querySelector('code');
       if (!code) return;
@@ -62,12 +70,13 @@
       const langClass = Array.from(code.classList).find(c => c.startsWith('language-'));
       const language = langClass ? langClass.replace('language-', '') : 'javascript';
 
-      // Create a container for our Svelte component
+      // Mark as processed to avoid double injection
+      pre.setAttribute('data-processed', 'true');
+      pre.style.display = 'none';
+
       const container = document.createElement('div');
       pre.parentNode?.insertBefore(container, pre);
-      pre.remove();
 
-      // Mount the CodeBlock component
       mount(CodeBlock, {
         target: container,
         props: { code: content, language }
@@ -90,15 +99,15 @@
 
       <aside class="hidden xl:block w-72 flex-shrink-0">
         <div class="sticky top-24">
-          <CategoryNav />
+          <CategoryNav label={settings?.labels?.categories} />
         </div>
       </aside>
 
       <article class="flex-1 min-w-0">
         <nav class="flex items-center text-sm text-muted-foreground mb-8 gap-2">
-          <a href="/" class="hover:text-primary"><Home class="h-4 w-4" /></a>
+          <a href="/" class="hover:text-primary transition-colors"><Home class="h-4 w-4" /></a>
           <ChevronRight class="h-4 w-4" />
-          {#if post.type === 'post'}<a href="/blog" class="hover:text-primary">Blog</a><ChevronRight class="h-4 w-4" />{/if}
+          {#if post.type === 'post'}<a href="/blog" class="hover:text-primary transition-colors">Blog</a><ChevronRight class="h-4 w-4" />{/if}
           <span class="truncate">{@html post.title.rendered}</span>
         </nav>
 
@@ -106,7 +115,7 @@
           <h1 class="text-4xl md:text-5xl font-bold mb-6">{@html post.title.rendered}</h1>
           <div class="flex flex-wrap items-center gap-6 text-sm text-muted-foreground border-b pb-6">
             <span>{format(new Date(post.date), 'yyyy.MM.dd')}</span>
-            {#if post.type === 'post'}<ReadingTime content={post.content.rendered} />{/if}
+            {#if post.type === 'post'}<ReadingTime content={post.content.rendered} label={settings?.labels?.reading_time} />{/if}
           </div>
         </header>
 
@@ -123,15 +132,17 @@
 
       <aside class="hidden lg:block xl:w-72 lg:w-64 flex-shrink-0">
         <div class="sticky top-24 space-y-12">
-          <TOC content={post.content.rendered} />
+          <TOC content={post.content.rendered} label={settings?.labels?.toc} />
           {#if post.type === 'post'}
             <div class="pt-10 border-t">
-              <div class="text-xs font-bold mb-4 uppercase tracking-widest text-muted-foreground">Article Stats</div>
-              <ReadingTime content={post.content.rendered} />
+              <div class="text-xs font-bold mb-4 uppercase tracking-widest text-muted-foreground">
+                {settings?.labels?.article_info || 'Article Info'}
+              </div>
+              <ReadingTime content={post.content.rendered} label={settings?.labels?.reading_time} />
             </div>
           {/if}
           <div class="xl:hidden border-t pt-10">
-             <CategoryNav />
+             <CategoryNav label={settings?.labels?.categories} />
           </div>
         </div>
       </aside>
@@ -140,9 +151,7 @@
 {:else}
   <div class="container py-32 text-center max-w-lg mx-auto">
     <div class="flex justify-center mb-6">
-       <div class="bg-destructive/10 p-4 rounded-full">
-         <AlertCircle class="h-12 w-12 text-destructive" />
-       </div>
+       <div class="bg-destructive/10 p-4 rounded-full"><AlertCircle class="h-12 w-12 text-destructive" /></div>
     </div>
     <h1 class="text-4xl font-bold mb-4">404 - Not Found</h1>
     <p class="text-muted-foreground mb-10 text-lg">Sorry, the page you are looking for does not exist or has been moved.</p>

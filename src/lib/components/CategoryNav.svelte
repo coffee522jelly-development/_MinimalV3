@@ -3,6 +3,8 @@
   import { Folder } from '@lucide/svelte';
   import CategoryNode from './CategoryNode.svelte';
 
+  let { label = "Categories" } = $props<{ label?: string }>();
+
   let categories = $state<any[]>([]);
   let openNodes = $state<Record<number, boolean>>({});
 
@@ -51,7 +53,7 @@
 <div class="font-mono text-sm bg-muted/20 rounded-lg border p-4">
   <div class="flex items-center gap-2 mb-4 pb-2 border-b">
     <Folder class="h-4 w-4 text-primary" />
-    <span class="font-bold">Categories</span>
+    <span class="font-bold">{label || 'Categories'}</span>
   </div>
 
   <div class="space-y-1">

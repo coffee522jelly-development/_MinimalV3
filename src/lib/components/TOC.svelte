@@ -2,7 +2,7 @@
   import { onMount, tick } from 'svelte';
   import { cn } from '$lib/utils';
 
-  let { content } = $props<{ content: string }>();
+  let { content, label = "Table of Contents" } = $props<{ content: string, label?: string }>();
 
   let headings = $state<{ id: string, text: string, level: number }[]>([]);
   let activeId = $state("");
@@ -21,10 +21,7 @@
     const headingElements = document.querySelectorAll('article .prose h2, article .prose h3, article .prose h4');
 
     headings = Array.from(headingElements).map((el, i) => {
-      // Ensure element has an ID for linking
-      if (!el.id) {
-        el.id = `heading-${i}`;
-      }
+      if (!el.id) el.id = `heading-${i}`;
       return {
         id: el.id,
         text: el.textContent || "",
@@ -34,9 +31,7 @@
 
     const observer = new IntersectionObserver((entries) => {
       entries.forEach(entry => {
-        if (entry.isIntersecting) {
-          activeId = entry.target.id;
-        }
+        if (entry.isIntersecting) activeId = entry.target.id;
       });
     }, { rootMargin: '-10% 0px -80% 0px' });
 
@@ -48,10 +43,7 @@
     e.preventDefault();
     const el = document.getElementById(id);
     if (el) {
-      window.scrollTo({
-        top: el.offsetTop - 100,
-        behavior: 'smooth'
-      });
+      window.scrollTo({ top: el.offsetTop - 100, behavior: 'smooth' });
       history.pushState(null, '', `#${id}`);
     }
   }
@@ -59,7 +51,7 @@
 
 {#if headings.length > 0}
   <nav class="space-y-2 text-sm">
-    <p class="font-bold mb-4 uppercase tracking-wider text-xs text-muted-foreground">Table of Contents</p>
+    <p class="font-bold mb-4 uppercase tracking-wider text-xs text-muted-foreground">{label || 'Table of Contents'}</p>
     <ul class="space-y-2 border-l ml-1">
       {#each headings as heading}
         <li
@@ -70,9 +62,7 @@
             heading.level === 4 && "ml-8"
           )}
         >
-          <a href="#{heading.id}" onclick={(e) => scrollToHeading(e, heading.id)}>
-            {heading.text}
-          </a>
+          <a href="#{heading.id}" onclick={(e) => scrollToHeading(e, heading.id)}>{heading.text}</a>
         </li>
       {/each}
     </ul>
