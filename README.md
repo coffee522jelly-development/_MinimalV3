@@ -1,47 +1,82 @@
-# Svelte + TS + Vite
+# Minimal Engineer WordPress Theme
 
-This template should help get you started developing with Svelte and TypeScript in Vite.
+A minimal, high-performance WordPress theme designed for developers and engineers. Built with Svelte 5, Tailwind CSS, and shadcn-svelte.
 
-## Recommended IDE Setup
+## 🚀 推奨設定 (Recommended Settings)
 
-[VS Code](https://code.visualstudio.com/) + [Svelte](https://marketplace.visualstudio.com/items?itemName=svelte.svelte-vscode).
+### パーマリンク設定 (Permalinks)
+このテーマは Single Page Application (SPA) として動作するため、WordPress のパーマリンク設定を **「投稿名」 (Post name)** にすることを強く推奨します。
 
-## Need an official Svelte framework?
+- **設定方法**: WordPress 管理画面 > 設定 > パーマリンク > 「投稿名」を選択して保存。
 
-Check out [SvelteKit](https://github.com/sveltejs/kit#readme), which is also powered by Vite. Deploy anywhere with its serverless-first approach and adapt to various platforms, with out of the box support for TypeScript, SCSS, and Less, and easily-added support for mdsvex, GraphQL, PostCSS, Tailwind CSS, and more.
+これにより、`example.com/my-post` のようなクリーンな URL で記事にアクセスできるようになります。
 
-## Technical considerations
+---
 
-**Why use this over SvelteKit?**
+## 🏗 ページ構造とルーティング (Structure & Routing)
 
-- It brings its own routing solution which might not be preferable for some users.
-- It is first and foremost a framework that just happens to use Vite under the hood, not a Vite app.
+本テーマはフロントエンドを Svelte で構築しており、WordPress REST API を介してコンテンツを取得します。
 
-This template contains as little as possible to get started with Vite + TypeScript + Svelte, while taking into account the developer experience with regards to HMR and intellisense. It demonstrates capabilities on par with the other `create-vite` templates and is a good starting point for beginners dipping their toes into a Vite + Svelte project.
+### ルーティングロジック
+- `/` : 記事一覧 (Post List)
+- `/blog` : 記事一覧
+- `/blog/:slug` : 記事詳細
+- `/category/:slug` : カテゴリ別一覧
+- `/tag/:slug` : タグ別一覧
+- `/sitemap` : サイトマップ
+- `/contact` : お問い合わせフォーム
+- `/:slug` : 固定ページ (Page) または 記事詳細 (Post) を自動判別して表示
 
-Should you later need the extended capabilities and extensibility provided by SvelteKit, the template has been structured similarly to SvelteKit so that it is easy to migrate.
+### 階層構造
+- **ナビゲーション**: WordPress の「固定ページ」の親子関係を自動的に取得し、ヘッダーにドロップダウン、フッターにネストされたリストとして表示します。
+- **カテゴリ**: 記事詳細ページのサイドバーに、最大3階層までのディレクトリツリー形式でカテゴリを表示します。
 
-**Why `global.d.ts` instead of `compilerOptions.types` inside `jsconfig.json` or `tsconfig.json`?**
+---
 
-Setting `compilerOptions.types` shuts out all other types not explicitly listed in the configuration. Using triple-slash references keeps the default TypeScript setting of accepting type information from the entire workspace, while also adding `svelte` and `vite/client` type information.
+## 📝 投稿テンプレート (Templates)
 
-**Why include `.vscode/extensions.json`?**
+本テーマは「投稿」のメタデータ (`_me_template_type`) を切り替えることで、用途に合わせた4つの表示形式をサポートしています。
 
-Other templates indirectly recommend extensions via the README, but this file allows VS Code to prompt the user to install the recommended extension upon opening the project.
+### 1. 通常記事 (Standard)
+- **用途**: 技術ブログ、チュートリアル、コラム。
+- **特徴**: シンプルなタイポグラフィ重視のレイアウト。
 
-**Why enable `allowJs` in the TS template?**
+### 2. アプリ紹介 (App Introduction)
+- **用途**: 個人開発アプリ、SaaS、ポートフォリオ。
+- **メタデータ**:
+  - `_me_app_subtitle`: アプリのキャッチコピー
+  - `_me_app_link_web`: ウェブサイト URL
+  - `_me_app_link_github`: GitHub URL
+  - `_me_app_logo_id`: ロゴ画像 (メディアID)
 
-While `allowJs: false` would indeed prevent the use of `.js` files in the project, it does not prevent the use of JavaScript syntax in `.svelte` files. In addition, it would force `checkJs: false`, bringing the worst of both worlds: not being able to guarantee the entire codebase is TypeScript, and also having worse typechecking for the existing JavaScript. In addition, there are valid use cases in which a mixed codebase may be relevant.
+### 3. リリースノート (Release Notes)
+- **用途**: アップデート情報の記録。
+- **メタデータ**:
+  - `_me_release_version`: バージョン番号 (例: 1.0.0)
 
-**Why is HMR not preserving my local component state?**
+### 4. 開発日記 (Development Diary)
+- **用途**: 開発ログ、日報。
+- **メタデータ**:
+  - `_me_diary_date`: 開発日
+  - `_me_diary_hours`: 作業時間
 
-HMR state preservation comes with a number of gotchas! It has been disabled by default in both `svelte-hmr` and `@sveltejs/vite-plugin-svelte` due to its often surprising behavior. You can read the details [here](https://github.com/rixo/svelte-hmr#svelte-hmr).
+---
 
-If you have state that's important to retain within a component, consider creating an external store which would not be replaced by HMR.
+## 💻 開発者向け機能 (Developer Features)
 
-```ts
-// store.ts
-// An extremely simple external store
-import { writable } from 'svelte/store'
-export default writable(0)
-```
+- **コードブロック**: Mac ターミナル風のデザイン。コピーボタンと言語名表示を搭載。
+- **ダークモード**: OS設定およびブラウザ保存に対応。
+- **読了目安**: 文字数に基づき自動計算 (500文字/分)。
+- **目次 (TOC)**: 本文中の H2, H3, H4 を自動抽出し、スクロール追従する目次を表示。
+- **タイポグラフィ**: `@tailwindcss/typography` (prose) により、表やリスト、引用を美しく表示。
+
+---
+
+## 🛠 ビルドとインストール (Build & Installation)
+
+1. テーマディレクトリで `npm install` を実行。
+2. `npm run build` で本番用アセットを生成。
+3. `dist` フォルダが生成されていることを確認。
+4. WordPress 管理画面からテーマを有効化。
+
+*注意: 開発環境では REST API のエンドポイントが WordPress 側で動作している必要があります。*

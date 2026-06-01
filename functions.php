@@ -44,6 +44,42 @@ function minimal_engineer_scripts() {
 }
 add_action( 'wp_enqueue_scripts', 'minimal_engineer_scripts' );
 
+/**
+ * Register Metadata
+ */
+function minimal_engineer_register_meta() {
+    $post_meta_fields = array(
+        '_me_template_type' => 'string',
+        '_me_app_subtitle' => 'string',
+        '_me_app_description' => 'string',
+        '_me_app_link_web' => 'string',
+        '_me_app_link_github' => 'string',
+        '_me_app_link_appstore' => 'string',
+        '_me_app_link_googleplay' => 'string',
+        '_me_app_logo_id' => 'integer',
+        '_me_app_screenshots' => 'string',
+        '_me_app_price' => 'string',
+        '_me_app_os' => 'string',
+        '_me_app_status' => 'string',
+        '_me_release_version' => 'string',
+        '_me_release_date' => 'string',
+        '_me_diary_date' => 'string',
+        '_me_diary_hours' => 'string',
+    );
+
+    foreach ( $post_meta_fields as $field => $type ) {
+        register_post_meta( 'post', $field, array(
+            'show_in_rest' => true,
+            'single' => true,
+            'type' => $type,
+            'auth_callback' => function() {
+                return current_user_can( 'edit_posts' );
+            }
+        ) );
+    }
+}
+add_action( 'init', 'minimal_engineer_register_meta' );
+
 // Filter to allow REST API to return more data
 add_filter( 'rest_prepare_post', 'minimal_engineer_rest_prepare_post', 10, 3 );
 function minimal_engineer_rest_prepare_post( $data, $post, $request ) {
@@ -61,6 +97,19 @@ function minimal_engineer_rest_prepare_post( $data, $post, $request ) {
     $_data['featured_image_url'] = $featured_media_id ? get_the_post_thumbnail_url( $post->ID, 'full' ) : null;
     $logo_id = get_post_meta( $post->ID, '_me_app_logo_id', true );
     $_data['app_logo_url'] = $logo_id ? wp_get_attachment_url( $logo_id ) : null;
+
+    // Explicitly add all our meta to the response for easier access
+    $meta_fields = array(
+        '_me_template_type', '_me_app_subtitle', '_me_app_description',
+        '_me_app_link_web', '_me_app_link_github', '_me_app_link_appstore',
+        '_me_app_link_googleplay', '_me_app_logo_id', '_me_app_screenshots',
+        '_me_app_price', '_me_app_os', '_me_app_status', '_me_release_version',
+        '_me_release_date', '_me_diary_date', '_me_diary_hours'
+    );
+    foreach ($meta_fields as $field) {
+        $_data['meta'][$field] = get_post_meta($post->ID, $field, true);
+    }
+
     $data->data = $_data;
     return $data;
 }
@@ -82,6 +131,12 @@ function minimal_engineer_customize_register( $wp_customize ) {
         'choices' => array( '1' => '1 Column', '2' => '2 Columns', '4' => '4 Columns' )
     ) );
 
+    $wp_customize->add_section( 'me_code_block', array( 'title' => 'Code Block Settings', 'priority' => 33 ) );
+    $wp_customize->add_setting( 'me_code_bg', array( 'default' => '#09090b', 'transport' => 'refresh' ) );
+    $wp_customize->add_control( new WP_Customize_Color_Control( $wp_customize, 'me_code_bg', array( 'label' => 'Background Color', 'section' => 'me_code_block' ) ) );
+    $wp_customize->add_setting( 'me_code_font_size', array( 'default' => '14', 'transport' => 'refresh' ) );
+    $wp_customize->add_control( 'me_code_font_size', array( 'label' => 'Font Size (px)', 'section' => 'me_code_block', 'type' => 'number' ) );
+
     $wp_customize->add_section( 'me_colors', array( 'title' => 'Theme Colors', 'priority' => 35 ) );
     $wp_customize->add_setting( 'me_primary_color', array( 'default' => '#18181b', 'transport' => 'refresh' ) );
     $wp_customize->add_control( new WP_Customize_Color_Control( $wp_customize, 'me_primary_color', array( 'label' => 'Primary Color', 'section' => 'me_colors' ) ) );
@@ -102,6 +157,10 @@ add_action( 'rest_api_init', function() {
                 'logo_text' => get_theme_mod( 'me_logo_text', 'Minimal Engineer' ),
                 'default_columns' => (int) get_theme_mod( 'me_default_columns', 1 ),
                 'primary_color' => get_theme_mod( 'me_primary_color', '#18181b' ),
+                'code_block' => array(
+                    'bg_color' => get_theme_mod( 'me_code_bg', '#09090b' ),
+                    'font_size' => get_theme_mod( 'me_code_font_size', '14' ),
+                ),
                 'sns' => array(
                     'github' => get_theme_mod( 'me_sns_github' ),
                     'x' => get_theme_mod( 'me_sns_x' ),
