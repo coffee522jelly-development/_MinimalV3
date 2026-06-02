@@ -19,7 +19,6 @@ if ( ! function_exists( 'minimal_engineer_setup' ) ) :
         add_theme_support( 'customize-selective-refresh-widgets' );
         add_theme_support( 'responsive-embeds' );
 
-        // Register Menus
         register_nav_menus( array(
             'primary' => 'Primary Menu',
             'footer'  => 'Footer Menu',
@@ -51,7 +50,7 @@ function minimal_engineer_scripts() {
 add_action( 'wp_enqueue_scripts', 'minimal_engineer_scripts' );
 
 /**
- * Register Metadata
+ * Register Metadata and Custom Meta Box
  */
 function minimal_engineer_register_meta() {
     $post_meta_fields = array(
@@ -86,7 +85,89 @@ function minimal_engineer_register_meta() {
 }
 add_action( 'init', 'minimal_engineer_register_meta' );
 
-// Filter to allow REST API to return more data
+function minimal_engineer_add_meta_boxes() {
+    add_meta_box(
+        'me_post_settings',
+        'Theme Post Settings',
+        'minimal_engineer_render_meta_box',
+        'post',
+        'side',
+        'high'
+    );
+}
+add_action( 'add_meta_boxes', 'minimal_engineer_add_meta_boxes' );
+
+function minimal_engineer_render_meta_box( $post ) {
+    wp_nonce_field( 'me_save_meta_box_data', 'me_meta_box_nonce' );
+
+    $type = get_post_meta( $post->ID, '_me_template_type', true );
+    $version = get_post_meta( $post->ID, '_me_release_version', true );
+    $subtitle = get_post_meta( $post->ID, '_me_app_subtitle', true );
+    $link_web = get_post_meta( $post->ID, '_me_app_link_web', true );
+    $link_github = get_post_meta( $post->ID, '_me_app_link_github', true );
+
+    ?>
+    <div style="margin-bottom: 15px;">
+        <label for="me_template_type"><strong>Template Type:</strong></label>
+        <select name="me_template_type" id="me_template_type" class="widefat" style="margin-top: 5px;">
+            <option value="standard" <?php selected( $type, 'standard' ); ?>>Tech (Standard)</option>
+            <option value="app" <?php selected( $type, 'app' ); ?>>App Intro</option>
+            <option value="release" <?php selected( $type, 'release' ); ?>>Release Notes</option>
+            <option value="diary" <?php selected( $type, 'diary' ); ?>>Dev Diary</option>
+        </select>
+    </div>
+
+    <div class="me-meta-group" data-type="release" style="display: <?php echo $type === 'release' ? 'block' : 'none'; ?>; margin-bottom: 15px;">
+        <label for="me_release_version"><strong>Version:</strong></label>
+        <input type="text" name="me_release_version" id="me_release_version" value="<?php echo esc_attr( $version ); ?>" class="widefat" placeholder="e.g. 1.0.0">
+    </div>
+
+    <div class="me-meta-group" data-type="app" style="display: <?php echo $type === 'app' ? 'block' : 'none'; ?>;">
+        <p><label for="me_app_subtitle"><strong>App Subtitle:</strong></label>
+        <input type="text" name="me_app_subtitle" id="me_app_subtitle" value="<?php echo esc_attr( $subtitle ); ?>" class="widefat"></p>
+
+        <p><label for="me_app_link_web"><strong>Website URL:</strong></label>
+        <input type="url" name="me_app_link_web" id="me_app_link_web" value="<?php echo esc_url( $link_web ); ?>" class="widefat"></p>
+
+        <p><label for="me_app_link_github"><strong>GitHub URL:</strong></label>
+        <input type="url" name="me_app_link_github" id="me_app_link_github" value="<?php echo esc_url( $link_github ); ?>" class="widefat"></p>
+    </div>
+
+    <script>
+        document.getElementById('me_template_type').addEventListener('change', function() {
+            var val = this.value;
+            document.querySelectorAll('.me-meta-group').forEach(function(el) {
+                el.style.display = el.getAttribute('data-type') === val ? 'block' : 'none';
+            });
+        });
+    </script>
+    <?php
+}
+
+function minimal_engineer_save_meta_box_data( $post_id ) {
+    if ( ! isset( $_POST['me_meta_box_nonce'] ) || ! wp_verify_nonce( $_POST['me_meta_box_nonce'], 'me_save_meta_box_data' ) ) return;
+    if ( defined( 'DOING_AUTOSAVE' ) && DOING_AUTOSAVE ) return;
+    if ( ! current_user_can( 'edit_post', $post_id ) ) return;
+
+    $fields = array(
+        'me_template_type' => '_me_template_type',
+        'me_release_version' => '_me_release_version',
+        'me_app_subtitle' => '_me_app_subtitle',
+        'me_app_link_web' => '_me_app_link_web',
+        'me_app_link_github' => '_me_app_link_github',
+    );
+
+    foreach ( $fields as $key => $meta_key ) {
+        if ( isset( $_POST[$key] ) ) {
+            update_post_meta( $post_id, $meta_key, sanitize_text_field( $_POST[$key] ) );
+        }
+    }
+}
+add_action( 'save_post', 'minimal_engineer_save_meta_box_data' );
+
+/**
+ * Filter to allow REST API to return more data
+ */
 add_filter( 'rest_prepare_post', 'minimal_engineer_rest_prepare_post', 10, 3 );
 function minimal_engineer_rest_prepare_post( $data, $post, $request ) {
     $_data = $data->data;
@@ -154,7 +235,6 @@ function minimal_engineer_customize_register( $wp_customize ) {
         $wp_customize->add_control( $id, array( 'label' => $cfg['label'], 'section' => 'me_labels', 'type' => 'text' ) );
     }
 
-    // FAB Settings
     $wp_customize->add_section( 'me_fab', array( 'title' => 'FAB Settings', 'priority' => 36 ) );
     $wp_customize->add_setting( 'me_fab_show_contact', array( 'default' => true, 'transport' => 'refresh' ) );
     $wp_customize->add_control( 'me_fab_show_contact', array( 'label' => 'Show Contact in FAB', 'section' => 'me_fab', 'type' => 'checkbox' ) );
