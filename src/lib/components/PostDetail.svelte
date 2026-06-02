@@ -82,6 +82,8 @@
       });
     });
   }
+
+  let primaryColor = $derived(settings?.primary_color || '#18181b');
 </script>
 
 {#if loading}
@@ -93,7 +95,7 @@
 {:else if post}
   <SEO title={post.title.rendered} type="article" />
 
-  <div class="w-full max-w-[1600px] mx-auto px-4 md:px-8 py-12">
+  <div class="w-full max-w-[1600px] mx-auto px-4 md:px-8 py-12" style="--primary-color: {primaryColor}">
     <div class="flex flex-col xl:flex-row gap-12 relative">
 
       <aside class="hidden xl:block w-72 flex-shrink-0">
@@ -126,7 +128,7 @@
           {:else if post.meta?._me_template_type === 'release'}<ReleaseNotes {post} />
           {:else if post.meta?._me_template_type === 'diary'}<DevDiary {post} />{/if}
 
-          <div bind:this={contentEl} class="prose dark:prose-invert max-w-none prose-headings:scroll-mt-20 prose-pre:p-0">
+          <div bind:this={contentEl} class="prose dark:prose-invert max-w-none prose-headings:scroll-mt-20 prose-pre:p-0 article-content">
             {@html post.content.rendered}
           </div>
 
@@ -167,3 +169,11 @@
     <a href="/"><Button variant="default" size="lg">Return to Home</Button></a>
   </div>
 {/if}
+
+<style>
+  :global(.article-content h2) {
+    border-bottom: 2px solid var(--primary-color);
+    padding-bottom: 0.5rem;
+    margin-top: 3rem;
+  }
+</style>
