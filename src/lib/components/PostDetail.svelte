@@ -1,7 +1,7 @@
 <script lang="ts">
   import { onMount, mount, unmount } from 'svelte';
   import { format } from 'date-fns';
-  import { ChevronRight, Home, AlertCircle } from '@lucide/svelte';
+  import { ChevronRight, Home, AlertCircle, Calendar } from '@lucide/svelte';
   import ReadingTime from './ReadingTime.svelte';
   import TOC from './TOC.svelte';
   import CategoryNav from './CategoryNav.svelte';
@@ -117,8 +117,16 @@
             <CategoryBadges categories={post.categories_data} class="mb-6" />
           {/if}
           <h1 class="text-4xl md:text-5xl font-bold mb-6">{@html post.title.rendered}</h1>
-          <div class="flex flex-wrap items-center gap-6 text-sm text-muted-foreground border-b pb-6">
-            <span>{format(new Date(post.date), 'yyyy.MM.dd')}</span>
+
+          <div class="flex flex-wrap items-center gap-x-8 gap-y-4 text-sm text-muted-foreground border-b pb-6">
+            <div class="flex items-center gap-2">
+              <Calendar class="h-4 w-4" />
+              <span>Published: {format(new Date(post.date), 'yyyy.MM.dd')}</span>
+            </div>
+            <div class="flex items-center gap-2">
+              <Calendar class="h-4 w-4" />
+              <span>Updated: {format(new Date(post.modified), 'yyyy.MM.dd')}</span>
+            </div>
             {#if post.type === 'post'}<ReadingTime content={post.content.rendered} label={settings?.labels?.reading_time} />{/if}
           </div>
         </header>
