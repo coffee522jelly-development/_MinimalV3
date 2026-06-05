@@ -11,6 +11,8 @@
   import SEO from './SEO.svelte';
   import CodeBlock from './CodeBlock.svelte';
   import CategoryBadges from './CategoryBadges.svelte';
+  import StickyNote from './StickyNote.svelte';
+  import DeveloperCalendar from './DeveloperCalendar.svelte';
   import { Button } from './ui/button';
 
   let { slug } = $props<{ slug: string }>();
@@ -99,8 +101,11 @@
     <div class="flex flex-col xl:flex-row gap-12 relative">
 
       <aside class="hidden xl:block w-72 flex-shrink-0">
-        <div class="sticky top-24">
+        <div class="sticky top-24 space-y-12">
           <CategoryNav label={settings?.labels?.categories} />
+          {#if settings?.widgets?.sticky_note}
+            <StickyNote text={settings.widgets.sticky_note} />
+          {/if}
         </div>
       </aside>
 
@@ -158,6 +163,11 @@
                 {settings?.labels?.article_info || 'Article Info'}
               </div>
               <ReadingTime content={post.content.rendered} label={settings?.labels?.reading_time} />
+            </div>
+          {/if}
+          {#if settings?.widgets?.show_calendar}
+            <div class="border-t pt-10">
+              <DeveloperCalendar />
             </div>
           {/if}
           <div class="xl:hidden border-t pt-10">

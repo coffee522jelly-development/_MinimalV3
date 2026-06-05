@@ -248,6 +248,13 @@ function minimal_engineer_customize_register( $wp_customize ) {
         ) );
     }
 
+    // Widgets Section
+    $wp_customize->add_section( 'me_widgets', array( 'title' => 'Theme Widgets', 'priority' => 37 ) );
+    $wp_customize->add_setting( 'me_sticky_note_text', array( 'default' => '', 'transport' => 'refresh' ) );
+    $wp_customize->add_control( 'me_sticky_note_text', array( 'label' => 'Sticky Note Text', 'section' => 'me_widgets', 'type' => 'textarea' ) );
+    $wp_customize->add_setting( 'me_show_calendar', array( 'default' => true, 'transport' => 'refresh' ) );
+    $wp_customize->add_control( 'me_show_calendar', array( 'label' => 'Show Developer Calendar', 'section' => 'me_widgets', 'type' => 'checkbox' ) );
+
     $wp_customize->add_section( 'me_colors', array( 'title' => 'Theme Colors', 'priority' => 35 ) );
     $wp_customize->add_setting( 'me_primary_color', array( 'default' => '#18181b', 'transport' => 'refresh' ) );
     $wp_customize->add_control( new WP_Customize_Color_Control( $wp_customize, 'me_primary_color', array( 'label' => 'Primary Color', 'section' => 'me_colors' ) ) );
@@ -297,6 +304,10 @@ add_action( 'rest_api_init', function() {
                     'show_contact' => (bool) get_theme_mod( 'me_fab_show_contact', true ),
                     'pages' => $fab_pages
                 ),
+                'widgets' => array(
+                    'sticky_note' => get_theme_mod( 'me_sticky_note_text', '' ),
+                    'show_calendar' => (bool) get_theme_mod( 'me_show_calendar', true ),
+                ),
                 'sns' => array(
                     'github' => get_theme_mod( 'me_sns_github' ),
                     'x' => get_theme_mod( 'me_sns_x' ),
@@ -315,11 +326,9 @@ add_action( 'rest_api_init', function() {
             $locations = get_nav_menu_locations();
             $menu_id = isset( $locations['primary'] ) ? $locations['primary'] : null;
             if ( ! $menu_id ) return array();
-
             $items = wp_get_nav_menu_items( $menu_id );
             $menu_tree = array();
             $child_items = array();
-
             foreach ( $items as $item ) {
                 if ( $item->menu_item_parent == 0 ) {
                     $menu_tree[$item->ID] = array(
@@ -332,7 +341,6 @@ add_action( 'rest_api_init', function() {
                     $child_items[] = $item;
                 }
             }
-
             foreach ( $child_items as $child ) {
                 if ( isset( $menu_tree[$child->menu_item_parent] ) ) {
                     $menu_tree[$child->menu_item_parent]['children'][] = array(
@@ -342,7 +350,6 @@ add_action( 'rest_api_init', function() {
                     );
                 }
             }
-
             return array_values( $menu_tree );
         },
         'permission_callback' => '__return_true'
