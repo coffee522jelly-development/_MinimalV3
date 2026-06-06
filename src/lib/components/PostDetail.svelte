@@ -3,7 +3,6 @@
   import { format } from 'date-fns';
   import { ChevronRight, Home, AlertCircle, Calendar } from '@lucide/svelte';
   import { marked } from 'marked';
-  import mermaid from 'mermaid';
   import ReadingTime from './ReadingTime.svelte';
   import TOC from './TOC.svelte';
   import CategoryNav from './CategoryNav.svelte';
@@ -28,7 +27,6 @@
   let settings = $state<any>(null);
 
   onMount(async () => {
-    mermaid.initialize({ startOnLoad: false, theme: 'default' });
     fetchData();
   });
 
@@ -89,6 +87,9 @@
         pre.remove();
 
         try {
+          // Dynamic import of mermaid to avoid bloating the main bundle
+          const mermaid = (await import('mermaid')).default;
+          mermaid.initialize({ startOnLoad: false, theme: 'default' });
           const { svg } = await mermaid.render(id, content);
           container.innerHTML = svg;
         } catch (err) {

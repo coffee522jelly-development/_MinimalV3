@@ -15,7 +15,9 @@
     "@testing-library/jest-dom": "^6.5.0",
     "@testing-library/svelte": "^5.2.0",
     "@tsconfig/svelte": "^5.0.4",
+    "@types/marked": "^5.0.2",
     "@types/node": "^22.0.0",
+    "@types/prismjs": "^1.26.6",
     "autoprefixer": "^10.4.20",
     "jsdom": "^25.0.0",
     "postcss": "^8.4.47",
@@ -28,8 +30,6 @@
   },
   "dependencies": {
     "@lucide/svelte": "^1.17.0",
-    "@types/marked": "^5.0.2",
-    "@types/prismjs": "^1.26.6",
     "bits-ui": "^0.21.16",
     "class-variance-authority": "^0.7.1",
     "clsx": "^2.1.1",
