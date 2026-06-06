@@ -10,7 +10,7 @@
   <div class={cn("flex flex-wrap gap-2", className)}>
     {#each categories as cat}
       <a href="/category/{cat.slug}">
-        <Badge variant="secondary" class="flex items-center gap-1.5 hover:bg-primary hover:text-primary-foreground transition-colors py-1 px-3">
+        <Badge variant="secondary" className="flex items-center gap-1.5 hover:bg-primary hover:text-primary-foreground transition-colors py-1 px-3">
           <Folder class="h-3 w-3" />
           {cat.name}
         </Badge>

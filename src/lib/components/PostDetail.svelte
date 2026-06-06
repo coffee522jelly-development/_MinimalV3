@@ -81,7 +81,7 @@
         }
       } else {
         pre.setAttribute('data-processed', 'true');
-        pre.style.display = 'none';
+        (pre as HTMLElement).style.display = 'none';
         const container = document.createElement('div');
         pre.parentNode?.insertBefore(container, pre);
         mount(CodeBlock, { target: container, props: { code: content, language } });
