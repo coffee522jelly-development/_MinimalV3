@@ -3,11 +3,12 @@
   import { Moon, Sun, Menu, X, ChevronDown, ChevronRight } from '@lucide/svelte';
   import { Button } from './ui/button';
   import { cn } from '$lib/utils';
+  import { t, type Language } from '$lib/i18n';
 
   let isDark = $state(false);
   let isMobileMenuOpen = $state(false);
   let menuItems = $state<any[]>([]);
-  let settings = $state<any>({ logo_text: 'Minimal Engineer' });
+  let settings = $state<any>({ logo_text: 'Minimal Engineer', language: 'en' });
   let openMenus = $state<Record<number, boolean>>({});
 
   onMount(async () => {
@@ -35,6 +36,9 @@
     localStorage.setItem('theme', isDark ? 'dark' : 'light');
   }
 
+  let hierarchicalPages = $derived(menuItems);
+  let lang = $derived(settings?.language as Language || 'en');
+
   function toggleMenu(id: number) {
     openMenus[id] = !openMenus[id];
   }
@@ -46,7 +50,8 @@
       <a href="/" class="text-xl font-bold">{settings?.logo_text || 'Minimal Engineer'}</a>
 
       <nav class="hidden md:flex items-center gap-6 ml-6 text-sm font-medium">
-        {#each menuItems as item}
+        <a href="/" class="transition-colors hover:text-primary">{t('home', lang)}</a>
+        {#each hierarchicalPages as item}
           <div class="relative group">
             <div class="flex items-center gap-1 cursor-pointer transition-colors hover:text-primary">
               <a href={item.url}>{item.title}</a>
@@ -83,8 +88,8 @@
 {#if isMobileMenuOpen}
   <div class="fixed inset-0 z-50 bg-background md:hidden pt-20 px-6 overflow-y-auto">
     <nav class="flex flex-col gap-4 text-lg font-medium pb-20">
-      <a href="/" onclick={() => isMobileMenuOpen = false}>Home</a>
-      {#each menuItems as item}
+      <a href="/" onclick={() => isMobileMenuOpen = false}>{t('home', lang)}</a>
+      {#each hierarchicalPages as item}
         <div>
           <div class="flex items-center justify-between">
             <a href={item.url} onclick={() => isMobileMenuOpen = false}>{item.title}</a>
@@ -103,6 +108,7 @@
           {/if}
         </div>
       {/each}
+      <a href="/contact" onclick={() => isMobileMenuOpen = false}>{t('contact', lang)}</a>
     </nav>
   </div>
 {/if}

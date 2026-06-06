@@ -4,10 +4,11 @@
   import { ChevronLeft, ChevronRight, Terminal } from '@lucide/svelte';
   import { Button } from './ui/button';
   import { cn } from '$lib/utils';
+  import { t, type Language } from '$lib/i18n';
 
   let currentDate = $state(new Date());
   let postDates = $state<Date[]>([]);
-  let primaryColor = $state('#18181b');
+  let settings = $state<any>(null);
 
   onMount(async () => {
     try {
@@ -16,10 +17,8 @@
         fetch('/wp-json/me/v1/settings')
       ]);
       const posts = await pRes.json();
-      const settings = await sRes.json();
-
+      settings = await sRes.json();
       postDates = posts.map((p: any) => new Date(p.date));
-      primaryColor = settings?.primary_color || '#18181b';
     } catch (e) {
       console.error(e);
     }
@@ -29,19 +28,16 @@
     const start = startOfMonth(currentDate);
     const end = endOfMonth(currentDate);
     const dateInterval = eachDayOfInterval({ start, end });
-
-    // Padding for the start of the week
     const padding = Array(getDay(start)).fill(null);
     return [...padding, ...dateInterval];
   });
 
-  function hasPost(date: Date) {
-    return postDates.some(d => isSameDay(d, date));
-  }
-
+  function hasPost(date: Date) { return postDates.some(d => isSameDay(d, date)); }
   function nextMonth() { currentDate = addMonths(currentDate, 1); }
-  function prevMonth() { currentDate = subMonths(currentDate, -1); } // wait subMonths is correct if 1, but sub -1 is add
   function handlePrev() { currentDate = subMonths(currentDate, 1); }
+
+  let lang = $derived(settings?.language as Language || 'en');
+  let primaryColor = $derived(settings?.primary_color || '#18181b');
 </script>
 
 <div class="bg-muted/20 border rounded-lg p-4 font-mono text-xs">
@@ -57,9 +53,7 @@
   </div>
 
   <div class="grid grid-cols-7 gap-1 text-center mb-2 text-muted-foreground font-bold">
-    {#each ['S', 'M', 'T', 'W', 'T', 'F', 'S'] as day}
-      <div>{day}</div>
-    {/each}
+    {#each ['S', 'M', 'T', 'W', 'T', 'F', 'S'] as day}<div>{day}</div>{/each}
   </div>
 
   <div class="grid grid-cols-7 gap-1">
@@ -67,22 +61,17 @@
       {#if day}
         {@const active = hasPost(day)}
         <div
-          class={cn(
-            "aspect-square flex items-center justify-center rounded-sm transition-colors",
-            active ? "text-white font-bold" : "text-foreground"
-          )}
+          class={cn("aspect-square flex items-center justify-center rounded-sm transition-colors", active ? "text-white font-bold" : "text-foreground")}
           style={active ? `background-color: ${primaryColor}` : ""}
         >
           {format(day, 'd')}
         </div>
-      {:else}
-        <div class="aspect-square"></div>
-      {/if}
+      {:else}<div class="aspect-square"></div>{/if}
     {/each}
   </div>
 
   <div class="mt-4 pt-2 border-t text-[10px] text-muted-foreground flex items-center gap-2">
     <div class="w-2 h-2 rounded-sm" style="background-color: {primaryColor}"></div>
-    <span>Activity present</span>
+    <span>{t('activity', lang)}</span>
   </div>
 </div>

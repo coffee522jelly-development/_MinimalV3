@@ -55,7 +55,7 @@ add_action( 'wp_enqueue_scripts', 'minimal_engineer_scripts' );
 function minimal_engineer_register_meta() {
     $post_meta_fields = array(
         '_me_template_type' => 'string',
-        '_me_parse_markdown' => 'string', // 'auto', 'on', 'off'
+        '_me_parse_markdown' => 'string',
         '_me_app_subtitle' => 'string',
         '_me_app_description' => 'string',
         '_me_app_link_web' => 'string',
@@ -108,9 +108,21 @@ function minimal_engineer_render_meta_box( $post ) {
     $link_web = get_post_meta( $post->ID, '_me_app_link_web', true );
     $link_github = get_post_meta( $post->ID, '_me_app_link_github', true );
 
+    $is_ja = get_theme_mod('me_language', 'en') === 'ja';
+    $labels = array(
+        'type' => $is_ja ? '投稿タイプ' : 'Template Type',
+        'markdown' => $is_ja ? 'Markdown パース' : 'Markdown Parsing',
+        'version' => $is_ja ? 'バージョン' : 'Version',
+        'subtitle' => $is_ja ? 'アプリのサブタイトル' : 'App Subtitle',
+        'web' => $is_ja ? '公式サイトURL' : 'Website URL',
+        'github' => $is_ja ? 'GitHub URL' : 'GitHub URL',
+        'auto' => $is_ja ? '自動判別' : 'Auto-detect',
+        'on' => $is_ja ? '常にパース' : 'Always Parse',
+        'off' => $is_ja ? '無効' : 'Disable',
+    );
     ?>
     <div style="margin-bottom: 15px;">
-        <label for="me_template_type"><strong>Template Type:</strong></label>
+        <label for="me_template_type"><strong><?php echo $labels['type']; ?>:</strong></label>
         <select name="me_template_type" id="me_template_type" class="widefat" style="margin-top: 5px;">
             <option value="standard" <?php selected( $type, 'standard' ); ?>>Tech (Standard)</option>
             <option value="app" <?php selected( $type, 'app' ); ?>>App Intro</option>
@@ -120,27 +132,27 @@ function minimal_engineer_render_meta_box( $post ) {
     </div>
 
     <div style="margin-bottom: 15px;">
-        <label for="me_parse_markdown"><strong>Markdown Parsing:</strong></label>
+        <label for="me_parse_markdown"><strong><?php echo $labels['markdown']; ?>:</strong></label>
         <select name="me_parse_markdown" id="me_parse_markdown" class="widefat" style="margin-top: 5px;">
-            <option value="auto" <?php selected( $markdown, 'auto' ); ?>>Auto-detect</option>
-            <option value="on" <?php selected( $markdown, 'on' ); ?>>Always Parse</option>
-            <option value="off" <?php selected( $markdown, 'off' ); ?>>Disable</option>
+            <option value="auto" <?php selected( $markdown, 'auto' ); ?>><?php echo $labels['auto']; ?></option>
+            <option value="on" <?php selected( $markdown, 'on' ); ?>><?php echo $labels['on']; ?></option>
+            <option value="off" <?php selected( $markdown, 'off' ); ?>><?php echo $labels['off']; ?></option>
         </select>
     </div>
 
     <div class="me-meta-group" data-type="release" style="display: <?php echo $type === 'release' ? 'block' : 'none'; ?>; margin-bottom: 15px;">
-        <label for="me_release_version"><strong>Version:</strong></label>
+        <label for="me_release_version"><strong><?php echo $labels['version']; ?>:</strong></label>
         <input type="text" name="me_release_version" id="me_release_version" value="<?php echo esc_attr( $version ); ?>" class="widefat" placeholder="e.g. 1.0.0">
     </div>
 
     <div class="me-meta-group" data-type="app" style="display: <?php echo $type === 'app' ? 'block' : 'none'; ?>;">
-        <p><label for="me_app_subtitle"><strong>App Subtitle:</strong></label>
+        <p><label for="me_app_subtitle"><strong><?php echo $labels['subtitle']; ?>:</strong></label>
         <input type="text" name="me_app_subtitle" id="me_app_subtitle" value="<?php echo esc_attr( $subtitle ); ?>" class="widefat"></p>
 
-        <p><label for="me_app_link_web"><strong>Website URL:</strong></label>
+        <p><label for="me_app_link_web"><strong><?php echo $labels['web']; ?>:</strong></label>
         <input type="url" name="me_app_link_web" id="me_app_link_web" value="<?php echo esc_url( $link_web ); ?>" class="widefat"></p>
 
-        <p><label for="me_app_link_github"><strong>GitHub URL:</strong></label>
+        <p><label for="me_app_link_github"><strong><?php echo $labels['github']; ?>:</strong></label>
         <input type="url" name="me_app_link_github" id="me_app_link_github" value="<?php echo esc_url( $link_github ); ?>" class="widefat"></p>
     </div>
 
@@ -216,6 +228,16 @@ function minimal_engineer_rest_prepare_post( $data, $post, $request ) {
  * Customizer settings
  */
 function minimal_engineer_customize_register( $wp_customize ) {
+    // General Section
+    $wp_customize->add_section( 'me_general', array( 'title' => 'General Settings', 'priority' => 20 ) );
+    $wp_customize->add_setting( 'me_language', array( 'default' => 'en', 'transport' => 'refresh' ) );
+    $wp_customize->add_control( 'me_language', array(
+        'label' => 'Theme Language',
+        'section' => 'me_general',
+        'type' => 'select',
+        'choices' => array( 'en' => 'English', 'ja' => '日本語' )
+    ) );
+
     $wp_customize->add_section( 'me_branding', array( 'title' => 'Branding', 'priority' => 30 ) );
     $wp_customize->add_setting( 'me_logo_text', array( 'default' => 'Minimal Engineer', 'transport' => 'refresh' ) );
     $wp_customize->add_control( 'me_logo_text', array( 'label' => 'Logo Text', 'section' => 'me_branding', 'type' => 'text' ) );
@@ -235,12 +257,12 @@ function minimal_engineer_customize_register( $wp_customize ) {
     $wp_customize->add_setting( 'me_code_font_size', array( 'default' => '14', 'transport' => 'refresh' ) );
     $wp_customize->add_control( 'me_code_font_size', array( 'label' => 'Font Size (px)', 'section' => 'me_code_block', 'type' => 'number' ) );
 
-    $wp_customize->add_section( 'me_labels', array( 'title' => 'UI Labels', 'priority' => 34 ) );
+    $wp_customize->add_section( 'me_labels', array( 'title' => 'UI Labels (Overrides)', 'priority' => 34 ) );
     $labels = array(
-        'me_label_categories' => array('default' => 'Categories', 'label' => 'Categories Sidebar Label'),
-        'me_label_toc' => array('default' => 'Table of Contents', 'label' => 'TOC Sidebar Label'),
-        'me_label_article_info' => array('default' => 'Article Info', 'label' => 'Article Info Label'),
-        'me_label_reading_time' => array('default' => 'Est. Read Time', 'label' => 'Reading Time Label'),
+        'me_label_categories' => array('default' => '', 'label' => 'Categories Sidebar Label'),
+        'me_label_toc' => array('default' => '', 'label' => 'TOC Sidebar Label'),
+        'me_label_article_info' => array('default' => '', 'label' => 'Article Info Label'),
+        'me_label_reading_time' => array('default' => '', 'label' => 'Reading Time Label'),
     );
     foreach ($labels as $id => $cfg) {
         $wp_customize->add_setting( $id, array( 'default' => $cfg['default'], 'transport' => 'refresh' ) );
@@ -294,14 +316,17 @@ add_action( 'rest_api_init', function() {
                 $page_id = get_theme_mod( "me_fab_page_$i", 0 );
                 if ($page_id > 0) {
                     $post = get_post($page_id);
-                    $fab_pages[] = array(
-                        'title' => $post->post_title,
-                        'url' => str_replace( home_url(), '', get_permalink($page_id) )
-                    );
+                    if ($post) {
+                        $fab_pages[] = array(
+                            'title' => $post->post_title,
+                            'url' => str_replace( home_url(), '', get_permalink($page_id) )
+                        );
+                    }
                 }
             }
 
             return array(
+                'language' => get_theme_mod( 'me_language', 'en' ),
                 'logo_text' => get_theme_mod( 'me_logo_text', 'Minimal Engineer' ),
                 'default_columns' => (int) get_theme_mod( 'me_default_columns', 1 ),
                 'primary_color' => get_theme_mod( 'me_primary_color', '#18181b' ),
@@ -310,10 +335,10 @@ add_action( 'rest_api_init', function() {
                     'font_size' => get_theme_mod( 'me_code_font_size', '14' ),
                 ),
                 'labels' => array(
-                    'categories' => get_theme_mod( 'me_label_categories', 'Categories' ),
-                    'toc' => get_theme_mod( 'me_label_toc', 'Table of Contents' ),
-                    'article_info' => get_theme_mod( 'me_label_article_info', 'Article Info' ),
-                    'reading_time' => get_theme_mod( 'me_label_reading_time', 'Est. Read Time' ),
+                    'categories' => get_theme_mod( 'me_label_categories', '' ),
+                    'toc' => get_theme_mod( 'me_label_toc', '' ),
+                    'article_info' => get_theme_mod( 'me_label_article_info', '' ),
+                    'reading_time' => get_theme_mod( 'me_label_reading_time', '' ),
                 ),
                 'fab' => array(
                     'show_contact' => (bool) get_theme_mod( 'me_fab_show_contact', true ),
@@ -347,28 +372,49 @@ add_action( 'rest_api_init', function() {
             $items = wp_get_nav_menu_items( $menu_id );
             $menu_tree = array();
             $child_items = array();
-            foreach ( $items as $item ) {
-                if ( $item->menu_item_parent == 0 ) {
-                    $menu_tree[$item->ID] = array(
-                        'id' => $item->ID,
-                        'title' => $item->title,
-                        'url' => str_replace( home_url(), '', $item->url ),
-                        'children' => array()
-                    );
-                } else {
-                    $child_items[] = $item;
+            if ($items) {
+                foreach ( $items as $item ) {
+                    if ( $item->menu_item_parent == 0 ) {
+                        $menu_tree[$item->ID] = array(
+                            'id' => $item->ID,
+                            'title' => $item->title,
+                            'url' => str_replace( home_url(), '', $item->url ),
+                            'children' => array()
+                        );
+                    } else {
+                        $child_items[] = $item;
+                    }
                 }
-            }
-            foreach ( $child_items as $child ) {
-                if ( isset( $menu_tree[$child->menu_item_parent] ) ) {
-                    $menu_tree[$child->menu_item_parent]['children'][] = array(
-                        'id' => $child->ID,
-                        'title' => $child->title,
-                        'url' => str_replace( home_url(), '', $child->url )
-                    );
+                foreach ( $child_items as $child ) {
+                    if ( isset( $menu_tree[$child->menu_item_parent] ) ) {
+                        $menu_tree[$child->menu_item_parent]['children'][] = array(
+                            'id' => $child->ID,
+                            'title' => $child->title,
+                            'url' => str_replace( home_url(), '', $child->url )
+                        );
+                    }
                 }
             }
             return array_values( $menu_tree );
+        },
+        'permission_callback' => '__return_true'
+    ) );
+
+    register_rest_route( 'me/v1', '/contact', array(
+        'methods' => 'POST',
+        'callback' => function($request) {
+            $params = $request->get_json_params();
+            $name = sanitize_text_field($params['name']);
+            $email = sanitize_email($params['email']);
+            $subject = sanitize_text_field($params['subject']);
+            $message = sanitize_textarea_field($params['message']);
+
+            $to = get_option('admin_email');
+            $body = "Name: $name\nEmail: $email\n\n$message";
+            $headers = array('Content-Type: text/plain; charset=UTF-8', "From: $name <$email>");
+
+            $success = wp_mail($to, "Contact: $subject", $body, $headers);
+            return array('success' => $success);
         },
         'permission_callback' => '__return_true'
     ) );

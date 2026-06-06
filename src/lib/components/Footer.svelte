@@ -1,5 +1,6 @@
 <script lang="ts">
   import { onMount } from 'svelte';
+  import { t, type Language } from '$lib/i18n';
 
   let menuItems = $state<any[]>([]);
   let settings = $state<any>(null);
@@ -17,6 +18,8 @@
       console.error(e);
     }
   });
+
+  let lang = $derived(settings?.language as Language || 'en');
 </script>
 
 <footer class="border-t bg-muted/50">
@@ -28,9 +31,9 @@
       </div>
 
       <div>
-        <h4 class="text-sm font-semibold mb-4">Navigation</h4>
+        <h4 class="text-sm font-semibold mb-4">{t('pages', lang)}</h4>
         <ul class="space-y-3 text-sm text-muted-foreground">
-          <li><a href="/" class="hover:text-primary transition-colors">Home</a></li>
+          <li><a href="/" class="hover:text-primary transition-colors">{t('home', lang)}</a></li>
           {#each menuItems as item}
             <li>
               <a href={item.url} class="hover:text-primary transition-colors font-medium text-foreground">{item.title}</a>
