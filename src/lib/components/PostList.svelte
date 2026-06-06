@@ -120,7 +120,9 @@
 
     <aside class="hidden lg:block w-72 flex-shrink-0">
       <div class="sticky top-24 space-y-12">
-        {#if settings?.widgets?.sticky_note}<StickyNote text={settings.widgets.sticky_note} />{/if}
+        {#if settings?.widgets?.sticky_note}
+          <StickyNote text={settings.widgets.sticky_note} color={settings.widgets.sticky_note_color} />
+        {/if}
         {#if settings?.widgets?.show_calendar}<DeveloperCalendar />{/if}
       </div>
     </aside>

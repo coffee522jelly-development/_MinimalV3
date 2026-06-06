@@ -38,6 +38,13 @@ function minimal_engineer_scripts() {
 
         if ( isset( $manifest['index.html']['file'] ) ) {
             wp_enqueue_script( 'minimal-engineer-js', get_template_directory_uri() . '/dist/' . $manifest['index.html']['file'], array(), null, true );
+
+            // Pass Nonce and Site info to JS
+            wp_localize_script( 'minimal-engineer-js', 'wpData', array(
+                'root' => esc_url_raw( rest_url() ),
+                'nonce' => wp_create_nonce( 'wp_rest' ),
+                'siteName' => get_bloginfo( 'name' )
+            ) );
         }
 
         if ( isset( $manifest['index.html']['css'] ) ) {
@@ -107,6 +114,9 @@ function minimal_engineer_render_meta_box( $post ) {
     $subtitle = get_post_meta( $post->ID, '_me_app_subtitle', true );
     $link_web = get_post_meta( $post->ID, '_me_app_link_web', true );
     $link_github = get_post_meta( $post->ID, '_me_app_link_github', true );
+    $link_appstore = get_post_meta( $post->ID, '_me_app_link_appstore', true );
+    $link_googleplay = get_post_meta( $post->ID, '_me_app_link_googleplay', true );
+    $app_status = get_post_meta( $post->ID, '_me_app_status', true );
 
     $is_ja = get_theme_mod('me_language', 'en') === 'ja';
     $labels = array(
@@ -116,6 +126,9 @@ function minimal_engineer_render_meta_box( $post ) {
         'subtitle' => $is_ja ? 'アプリのサブタイトル' : 'App Subtitle',
         'web' => $is_ja ? '公式サイトURL' : 'Website URL',
         'github' => $is_ja ? 'GitHub URL' : 'GitHub URL',
+        'appstore' => 'App Store URL',
+        'googleplay' => 'Google Play URL',
+        'status' => $is_ja ? '開発状況' : 'Status',
         'auto' => $is_ja ? '自動判別' : 'Auto-detect',
         'on' => $is_ja ? '常にパース' : 'Always Parse',
         'off' => $is_ja ? '無効' : 'Disable',
@@ -149,11 +162,20 @@ function minimal_engineer_render_meta_box( $post ) {
         <p><label for="me_app_subtitle"><strong><?php echo $labels['subtitle']; ?>:</strong></label>
         <input type="text" name="me_app_subtitle" id="me_app_subtitle" value="<?php echo esc_attr( $subtitle ); ?>" class="widefat"></p>
 
+        <p><label for="me_app_status"><strong><?php echo $labels['status']; ?>:</strong></label>
+        <input type="text" name="me_app_status" id="me_app_status" value="<?php echo esc_attr( $app_status ); ?>" class="widefat" placeholder="e.g. Beta, Live"></p>
+
         <p><label for="me_app_link_web"><strong><?php echo $labels['web']; ?>:</strong></label>
         <input type="url" name="me_app_link_web" id="me_app_link_web" value="<?php echo esc_url( $link_web ); ?>" class="widefat"></p>
 
         <p><label for="me_app_link_github"><strong><?php echo $labels['github']; ?>:</strong></label>
         <input type="url" name="me_app_link_github" id="me_app_link_github" value="<?php echo esc_url( $link_github ); ?>" class="widefat"></p>
+
+        <p><label for="me_app_link_appstore"><strong><?php echo $labels['appstore']; ?>:</strong></label>
+        <input type="url" name="me_app_link_appstore" id="me_app_link_appstore" value="<?php echo esc_url( $link_appstore ); ?>" class="widefat"></p>
+
+        <p><label for="me_app_link_googleplay"><strong><?php echo $labels['googleplay']; ?>:</strong></label>
+        <input type="url" name="me_app_link_googleplay" id="me_app_link_googleplay" value="<?php echo esc_url( $link_googleplay ); ?>" class="widefat"></p>
     </div>
 
     <script>
@@ -177,8 +199,11 @@ function minimal_engineer_save_meta_box_data( $post_id ) {
         'me_parse_markdown' => '_me_parse_markdown',
         'me_release_version' => '_me_release_version',
         'me_app_subtitle' => '_me_app_subtitle',
+        'me_app_status' => '_me_app_status',
         'me_app_link_web' => '_me_app_link_web',
         'me_app_link_github' => '_me_app_link_github',
+        'me_app_link_appstore' => '_me_app_link_appstore',
+        'me_app_link_googleplay' => '_me_app_link_googleplay',
     );
 
     foreach ( $fields as $key => $meta_key ) {
@@ -228,15 +253,9 @@ function minimal_engineer_rest_prepare_post( $data, $post, $request ) {
  * Customizer settings
  */
 function minimal_engineer_customize_register( $wp_customize ) {
-    // General Section
     $wp_customize->add_section( 'me_general', array( 'title' => 'General Settings', 'priority' => 20 ) );
     $wp_customize->add_setting( 'me_language', array( 'default' => 'en', 'transport' => 'refresh' ) );
-    $wp_customize->add_control( 'me_language', array(
-        'label' => 'Theme Language',
-        'section' => 'me_general',
-        'type' => 'select',
-        'choices' => array( 'en' => 'English', 'ja' => '日本語' )
-    ) );
+    $wp_customize->add_control( 'me_language', array( 'label' => 'Theme Language', 'section' => 'me_general', 'type' => 'select', 'choices' => array( 'en' => 'English', 'ja' => '日本語' ) ) );
 
     $wp_customize->add_section( 'me_branding', array( 'title' => 'Branding', 'priority' => 30 ) );
     $wp_customize->add_setting( 'me_logo_text', array( 'default' => 'Minimal Engineer', 'transport' => 'refresh' ) );
@@ -244,12 +263,7 @@ function minimal_engineer_customize_register( $wp_customize ) {
 
     $wp_customize->add_section( 'me_layout', array( 'title' => 'Layout Settings', 'priority' => 32 ) );
     $wp_customize->add_setting( 'me_default_columns', array( 'default' => '1', 'transport' => 'refresh' ) );
-    $wp_customize->add_control( 'me_default_columns', array(
-        'label' => 'Default List Columns',
-        'section' => 'me_layout',
-        'type' => 'select',
-        'choices' => array( '1' => '1 Column', '2' => '2 Columns', '4' => '4 Columns' )
-    ) );
+    $wp_customize->add_control( 'me_default_columns', array( 'label' => 'Default List Columns', 'section' => 'me_layout', 'type' => 'select', 'choices' => array( '1' => '1 Column', '2' => '2 Columns', '4' => '4 Columns' ) ) );
 
     $wp_customize->add_section( 'me_code_block', array( 'title' => 'Code Block Settings', 'priority' => 33 ) );
     $wp_customize->add_setting( 'me_code_bg', array( 'default' => '#09090b', 'transport' => 'refresh' ) );
@@ -258,33 +272,25 @@ function minimal_engineer_customize_register( $wp_customize ) {
     $wp_customize->add_control( 'me_code_font_size', array( 'label' => 'Font Size (px)', 'section' => 'me_code_block', 'type' => 'number' ) );
 
     $wp_customize->add_section( 'me_labels', array( 'title' => 'UI Labels (Overrides)', 'priority' => 34 ) );
-    $labels = array(
-        'me_label_categories' => array('default' => '', 'label' => 'Categories Sidebar Label'),
-        'me_label_toc' => array('default' => '', 'label' => 'TOC Sidebar Label'),
-        'me_label_article_info' => array('default' => '', 'label' => 'Article Info Label'),
-        'me_label_reading_time' => array('default' => '', 'label' => 'Reading Time Label'),
-    );
-    foreach ($labels as $id => $cfg) {
-        $wp_customize->add_setting( $id, array( 'default' => $cfg['default'], 'transport' => 'refresh' ) );
-        $wp_customize->add_control( $id, array( 'label' => $cfg['label'], 'section' => 'me_labels', 'type' => 'text' ) );
+    $labels = array( 'me_label_categories' => 'Categories', 'me_label_toc' => 'Table of Contents', 'me_label_article_info' => 'Article Info', 'me_label_reading_time' => 'Est. Read Time' );
+    foreach ($labels as $id => $label) {
+        $wp_customize->add_setting( $id, array( 'default' => '', 'transport' => 'refresh' ) );
+        $wp_customize->add_control( $id, array( 'label' => $label . ' Override', 'section' => 'me_labels', 'type' => 'text' ) );
     }
 
     $wp_customize->add_section( 'me_fab', array( 'title' => 'FAB Settings', 'priority' => 36 ) );
     $wp_customize->add_setting( 'me_fab_show_contact', array( 'default' => true, 'transport' => 'refresh' ) );
     $wp_customize->add_control( 'me_fab_show_contact', array( 'label' => 'Show Contact in FAB', 'section' => 'me_fab', 'type' => 'checkbox' ) );
-
     for ($i = 1; $i <= 4; $i++) {
         $wp_customize->add_setting( "me_fab_page_$i", array( 'default' => '0', 'transport' => 'refresh' ) );
-        $wp_customize->add_control( "me_fab_page_$i", array(
-            'label' => "FAB Page Link $i",
-            'section' => 'me_fab',
-            'type' => 'dropdown-pages',
-        ) );
+        $wp_customize->add_control( "me_fab_page_$i", array( 'label' => "FAB Page Link $i", 'section' => 'me_fab', 'type' => 'dropdown-pages' ) );
     }
 
     $wp_customize->add_section( 'me_widgets', array( 'title' => 'Theme Widgets', 'priority' => 37 ) );
     $wp_customize->add_setting( 'me_sticky_note_text', array( 'default' => '', 'transport' => 'refresh' ) );
     $wp_customize->add_control( 'me_sticky_note_text', array( 'label' => 'Sticky Note Text', 'section' => 'me_widgets', 'type' => 'textarea' ) );
+    $wp_customize->add_setting( 'me_sticky_note_color', array( 'default' => 'yellow', 'transport' => 'refresh' ) );
+    $wp_customize->add_control( 'me_sticky_note_color', array( 'label' => 'Sticky Note Color', 'section' => 'me_widgets', 'type' => 'select', 'choices' => array( 'yellow' => 'Yellow', 'blue' => 'Blue', 'pink' => 'Pink', 'green' => 'Green' ) ) );
     $wp_customize->add_setting( 'me_show_calendar', array( 'default' => true, 'transport' => 'refresh' ) );
     $wp_customize->add_control( 'me_show_calendar', array( 'label' => 'Show Developer Calendar', 'section' => 'me_widgets', 'type' => 'checkbox' ) );
 
@@ -317,47 +323,21 @@ add_action( 'rest_api_init', function() {
                 if ($page_id > 0) {
                     $post = get_post($page_id);
                     if ($post) {
-                        $fab_pages[] = array(
-                            'title' => $post->post_title,
-                            'url' => str_replace( home_url(), '', get_permalink($page_id) )
-                        );
+                        $fab_pages[] = array( 'title' => $post->post_title, 'url' => str_replace( home_url(), '', get_permalink($page_id) ) );
                     }
                 }
             }
-
             return array(
                 'language' => get_theme_mod( 'me_language', 'en' ),
                 'logo_text' => get_theme_mod( 'me_logo_text', 'Minimal Engineer' ),
                 'default_columns' => (int) get_theme_mod( 'me_default_columns', 1 ),
                 'primary_color' => get_theme_mod( 'me_primary_color', '#18181b' ),
-                'code_block' => array(
-                    'bg_color' => get_theme_mod( 'me_code_bg', '#09090b' ),
-                    'font_size' => get_theme_mod( 'me_code_font_size', '14' ),
-                ),
-                'labels' => array(
-                    'categories' => get_theme_mod( 'me_label_categories', '' ),
-                    'toc' => get_theme_mod( 'me_label_toc', '' ),
-                    'article_info' => get_theme_mod( 'me_label_article_info', '' ),
-                    'reading_time' => get_theme_mod( 'me_label_reading_time', '' ),
-                ),
-                'fab' => array(
-                    'show_contact' => (bool) get_theme_mod( 'me_fab_show_contact', true ),
-                    'pages' => $fab_pages
-                ),
-                'widgets' => array(
-                    'sticky_note' => get_theme_mod( 'me_sticky_note_text', '' ),
-                    'show_calendar' => (bool) get_theme_mod( 'me_show_calendar', true ),
-                ),
-                'markdown' => array(
-                    'auto_detect' => (bool) get_theme_mod( 'me_enable_markdown_auto', true )
-                ),
-                'sns' => array(
-                    'github' => get_theme_mod( 'me_sns_github' ),
-                    'x' => get_theme_mod( 'me_sns_x' ),
-                    'youtube' => get_theme_mod( 'me_sns_youtube' ),
-                    'qiita' => get_theme_mod( 'me_sns_qiita' ),
-                    'zenn' => get_theme_mod( 'me_sns_zenn' ),
-                )
+                'code_block' => array( 'bg_color' => get_theme_mod( 'me_code_bg', '#09090b' ), 'font_size' => get_theme_mod( 'me_code_font_size', '14' ) ),
+                'labels' => array( 'categories' => get_theme_mod( 'me_label_categories', '' ), 'toc' => get_theme_mod( 'me_label_toc', '' ), 'article_info' => get_theme_mod( 'me_label_article_info', '' ), 'reading_time' => get_theme_mod( 'me_label_reading_time', '' ) ),
+                'fab' => array( 'show_contact' => (bool) get_theme_mod( 'me_fab_show_contact', true ), 'pages' => $fab_pages ),
+                'widgets' => array( 'sticky_note' => get_theme_mod( 'me_sticky_note_text', '' ), 'sticky_note_color' => get_theme_mod( 'me_sticky_note_color', 'yellow' ), 'show_calendar' => (bool) get_theme_mod( 'me_show_calendar', true ) ),
+                'markdown' => array( 'auto_detect' => (bool) get_theme_mod( 'me_enable_markdown_auto', true ) ),
+                'sns' => array( 'github' => get_theme_mod( 'me_sns_github' ), 'x' => get_theme_mod( 'me_sns_x' ), 'youtube' => get_theme_mod( 'me_sns_youtube' ), 'qiita' => get_theme_mod( 'me_sns_qiita' ), 'zenn' => get_theme_mod( 'me_sns_zenn' ) )
             );
         },
         'permission_callback' => '__return_true'
@@ -375,24 +355,11 @@ add_action( 'rest_api_init', function() {
             if ($items) {
                 foreach ( $items as $item ) {
                     if ( $item->menu_item_parent == 0 ) {
-                        $menu_tree[$item->ID] = array(
-                            'id' => $item->ID,
-                            'title' => $item->title,
-                            'url' => str_replace( home_url(), '', $item->url ),
-                            'children' => array()
-                        );
-                    } else {
-                        $child_items[] = $item;
-                    }
+                        $menu_tree[$item->ID] = array( 'id' => $item->ID, 'title' => $item->title, 'url' => str_replace( home_url(), '', $item->url ), 'children' => array() );
+                    } else { $child_items[] = $item; }
                 }
                 foreach ( $child_items as $child ) {
-                    if ( isset( $menu_tree[$child->menu_item_parent] ) ) {
-                        $menu_tree[$child->menu_item_parent]['children'][] = array(
-                            'id' => $child->ID,
-                            'title' => $child->title,
-                            'url' => str_replace( home_url(), '', $child->url )
-                        );
-                    }
+                    if ( isset( $menu_tree[$child->menu_item_parent] ) ) { $menu_tree[$child->menu_item_parent]['children'][] = array( 'id' => $child->ID, 'title' => $child->title, 'url' => str_replace( home_url(), '', $child->url ) ); }
                 }
             }
             return array_values( $menu_tree );
@@ -408,14 +375,16 @@ add_action( 'rest_api_init', function() {
             $email = sanitize_email($params['email']);
             $subject = sanitize_text_field($params['subject']);
             $message = sanitize_textarea_field($params['message']);
-
             $to = get_option('admin_email');
             $body = "Name: $name\nEmail: $email\n\n$message";
             $headers = array('Content-Type: text/plain; charset=UTF-8', "From: $name <$email>");
-
             $success = wp_mail($to, "Contact: $subject", $body, $headers);
             return array('success' => $success);
         },
-        'permission_callback' => '__return_true'
+        'permission_callback' => function($request) {
+             // Basic nonce check for REST API
+             $nonce = $request->get_header('X-WP-Nonce');
+             return wp_verify_nonce($nonce, 'wp_rest');
+        }
     ) );
 } );

@@ -98,7 +98,9 @@
       <aside class="hidden xl:block w-72 flex-shrink-0">
         <div class="sticky top-24 space-y-12">
           <CategoryNav label={settings?.labels?.categories || t('categories', lang)} />
-          {#if settings?.widgets?.sticky_note}<StickyNote text={settings.widgets.sticky_note} />{/if}
+          {#if settings?.widgets?.sticky_note}
+            <StickyNote text={settings.widgets.sticky_note} color={settings.widgets.sticky_note_color} />
+          {/if}
         </div>
       </aside>
 
