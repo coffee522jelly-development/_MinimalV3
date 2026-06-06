@@ -1,5 +1,4 @@
 <script lang="ts">
-  import { onMount } from 'svelte';
   import { Router, Route } from "svelte-routing";
   import Header from "./lib/components/Header.svelte";
   import Footer from "./lib/components/Footer.svelte";
@@ -11,7 +10,7 @@
   import { getBase } from "./lib/api";
   import './app.css';
 
-  export let url = "";
+  let { url = "" } = $props<{ url?: string }>();
   const base = getBase();
 </script>
 

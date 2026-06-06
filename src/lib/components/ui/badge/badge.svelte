@@ -22,10 +22,17 @@
     }
   );
 
-  export let variant: VariantProps<typeof badgeVariants>["variant"] = "default";
-  export let className: string | undefined = undefined;
+  let {
+    variant = "default",
+    class: className = undefined,
+    children
+  } = $props<{
+    variant?: VariantProps<typeof badgeVariants>["variant"];
+    class?: string;
+    children?: import('svelte').Snippet;
+  }>();
 </script>
 
 <div class={cn(badgeVariants({ variant }), className)}>
-  <slot />
+  {@render children?.()}
 </div>

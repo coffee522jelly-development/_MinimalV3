@@ -1,24 +1,31 @@
 <script lang="ts">
-  import { Button as ButtonPrimitive } from "bits-ui";
-  import { buttonVariants, type Variant, type Size } from "./index.js";
   import { cn } from "$lib/utils";
+  import { buttonVariants, type Variant, type Size } from "./index.js";
 
-  let className: string | undefined = undefined;
-  export { className as class };
-  export let variant: Variant = "default";
-  export let size: Size = "default";
-  export let builders: any[] = [];
+  let {
+    class: className = undefined,
+    variant = "default",
+    size = "default",
+    type = "button",
+    children,
+    onclick,
+    ...rest
+  } = $props<{
+    class?: string;
+    variant?: Variant;
+    size?: Size;
+    type?: "button" | "submit" | "reset";
+    children?: import('svelte').Snippet;
+    onclick?: (e: MouseEvent) => void;
+    [key: string]: any;
+  }>();
 </script>
 
-<ButtonPrimitive.Root
-  {builders}
+<button
+  {type}
   class={cn(buttonVariants({ variant, size, className }))}
-  type="button"
-  on:click
-  on:keydown
-  on:mouseenter
-  on:mouseleave
-  {...$$restProps}
+  {onclick}
+  {...rest}
 >
-  <slot />
-</ButtonPrimitive.Root>
+  {@render children?.()}
+</button>

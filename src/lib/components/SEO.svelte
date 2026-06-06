@@ -1,26 +1,34 @@
 <script lang="ts">
   import { onMount } from 'svelte';
 
-  export let title: string;
-  export let description: string = "";
-  export let image: string = "";
-  export let type: "website" | "article" = "website";
-  export let url: string = "";
+  let {
+    title,
+    description = "",
+    image = "",
+    type = "website",
+    url = ""
+  } = $props<{
+    title: string;
+    description?: string;
+    image?: string;
+    type?: "website" | "article";
+    url?: string;
+  }>();
 
-  const siteName = "Minimal Engineer";
+  const siteName = "MinimalEngineer";
 
   onMount(() => {
     document.title = title ? `${title} | ${siteName}` : siteName;
   });
 
-  $: jsonLd = {
+  let jsonLd = $derived({
     "@context": "https://schema.org",
     "@type": type === 'article' ? 'BlogPosting' : 'WebSite',
     "headline": title,
     "description": description,
     "image": image,
     "url": url
-  };
+  });
 </script>
 
 <svelte:head>
