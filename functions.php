@@ -55,6 +55,7 @@ add_action( 'wp_enqueue_scripts', 'minimal_engineer_scripts' );
 function minimal_engineer_register_meta() {
     $post_meta_fields = array(
         '_me_template_type' => 'string',
+        '_me_parse_markdown' => 'string', // 'auto', 'on', 'off'
         '_me_app_subtitle' => 'string',
         '_me_app_description' => 'string',
         '_me_app_link_web' => 'string',
@@ -101,6 +102,7 @@ function minimal_engineer_render_meta_box( $post ) {
     wp_nonce_field( 'me_save_meta_box_data', 'me_meta_box_nonce' );
 
     $type = get_post_meta( $post->ID, '_me_template_type', true );
+    $markdown = get_post_meta( $post->ID, '_me_parse_markdown', true );
     $version = get_post_meta( $post->ID, '_me_release_version', true );
     $subtitle = get_post_meta( $post->ID, '_me_app_subtitle', true );
     $link_web = get_post_meta( $post->ID, '_me_app_link_web', true );
@@ -114,6 +116,15 @@ function minimal_engineer_render_meta_box( $post ) {
             <option value="app" <?php selected( $type, 'app' ); ?>>App Intro</option>
             <option value="release" <?php selected( $type, 'release' ); ?>>Release Notes</option>
             <option value="diary" <?php selected( $type, 'diary' ); ?>>Dev Diary</option>
+        </select>
+    </div>
+
+    <div style="margin-bottom: 15px;">
+        <label for="me_parse_markdown"><strong>Markdown Parsing:</strong></label>
+        <select name="me_parse_markdown" id="me_parse_markdown" class="widefat" style="margin-top: 5px;">
+            <option value="auto" <?php selected( $markdown, 'auto' ); ?>>Auto-detect</option>
+            <option value="on" <?php selected( $markdown, 'on' ); ?>>Always Parse</option>
+            <option value="off" <?php selected( $markdown, 'off' ); ?>>Disable</option>
         </select>
     </div>
 
@@ -151,6 +162,7 @@ function minimal_engineer_save_meta_box_data( $post_id ) {
 
     $fields = array(
         'me_template_type' => '_me_template_type',
+        'me_parse_markdown' => '_me_parse_markdown',
         'me_release_version' => '_me_release_version',
         'me_app_subtitle' => '_me_app_subtitle',
         'me_app_link_web' => '_me_app_link_web',
@@ -186,7 +198,7 @@ function minimal_engineer_rest_prepare_post( $data, $post, $request ) {
     $_data['app_logo_url'] = $logo_id ? wp_get_attachment_url( $logo_id ) : null;
 
     $meta_fields = array(
-        '_me_template_type', '_me_app_subtitle', '_me_app_description',
+        '_me_template_type', '_me_parse_markdown', '_me_app_subtitle', '_me_app_description',
         '_me_app_link_web', '_me_app_link_github', '_me_app_link_appstore',
         '_me_app_link_googleplay', '_me_app_logo_id', '_me_app_screenshots',
         '_me_app_price', '_me_app_os', '_me_app_status', '_me_release_version',
@@ -248,12 +260,15 @@ function minimal_engineer_customize_register( $wp_customize ) {
         ) );
     }
 
-    // Widgets Section
     $wp_customize->add_section( 'me_widgets', array( 'title' => 'Theme Widgets', 'priority' => 37 ) );
     $wp_customize->add_setting( 'me_sticky_note_text', array( 'default' => '', 'transport' => 'refresh' ) );
     $wp_customize->add_control( 'me_sticky_note_text', array( 'label' => 'Sticky Note Text', 'section' => 'me_widgets', 'type' => 'textarea' ) );
     $wp_customize->add_setting( 'me_show_calendar', array( 'default' => true, 'transport' => 'refresh' ) );
     $wp_customize->add_control( 'me_show_calendar', array( 'label' => 'Show Developer Calendar', 'section' => 'me_widgets', 'type' => 'checkbox' ) );
+
+    $wp_customize->add_section( 'me_markdown', array( 'title' => 'Markdown Settings', 'priority' => 38 ) );
+    $wp_customize->add_setting( 'me_enable_markdown_auto', array( 'default' => true, 'transport' => 'refresh' ) );
+    $wp_customize->add_control( 'me_enable_markdown_auto', array( 'label' => 'Enable Markdown Auto-detection', 'section' => 'me_markdown', 'type' => 'checkbox' ) );
 
     $wp_customize->add_section( 'me_colors', array( 'title' => 'Theme Colors', 'priority' => 35 ) );
     $wp_customize->add_setting( 'me_primary_color', array( 'default' => '#18181b', 'transport' => 'refresh' ) );
@@ -307,6 +322,9 @@ add_action( 'rest_api_init', function() {
                 'widgets' => array(
                     'sticky_note' => get_theme_mod( 'me_sticky_note_text', '' ),
                     'show_calendar' => (bool) get_theme_mod( 'me_show_calendar', true ),
+                ),
+                'markdown' => array(
+                    'auto_detect' => (bool) get_theme_mod( 'me_enable_markdown_auto', true )
                 ),
                 'sns' => array(
                     'github' => get_theme_mod( 'me_sns_github' ),

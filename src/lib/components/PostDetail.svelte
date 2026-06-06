@@ -2,6 +2,7 @@
   import { onMount, mount, unmount } from 'svelte';
   import { format } from 'date-fns';
   import { ChevronRight, Home, AlertCircle, Calendar } from '@lucide/svelte';
+  import { marked } from 'marked';
   import ReadingTime from './ReadingTime.svelte';
   import TOC from './TOC.svelte';
   import CategoryNav from './CategoryNav.svelte';
@@ -85,6 +86,28 @@
     });
   }
 
+  function shouldParseMarkdown(content: string, meta: any) {
+    const setting = meta?._me_parse_markdown || 'auto';
+    if (setting === 'on') return true;
+    if (setting === 'off') return false;
+
+    // Auto-detect: if content contains common MD syntax but limited HTML tags
+    const mdRegex = /^(#|>\s|\*\s|-\s|\d+\.\s|\[.*\]\(.*\)|!\[.*\]\(.*\)|```)/m;
+    const hasHtml = /<[a-z][\s\S]*>/i.test(content);
+    return mdRegex.test(content) && (!hasHtml || content.startsWith('<p>'));
+  }
+
+  let processedContent = $derived.by(() => {
+    if (!post) return "";
+    const raw = post.content.rendered;
+    if (shouldParseMarkdown(raw, post.meta)) {
+      // Clean standard WP paragraph wrapping if it looks like MD
+      const clean = raw.replace(/^<p>/, '').replace(/<\/p>$/, '');
+      return marked.parse(clean);
+    }
+    return raw;
+  });
+
   let primaryColor = $derived(settings?.primary_color || '#18181b');
 </script>
 
@@ -132,7 +155,7 @@
               <Calendar class="h-4 w-4" />
               <span>Updated: {format(new Date(post.modified), 'yyyy.MM.dd')}</span>
             </div>
-            {#if post.type === 'post'}<ReadingTime content={post.content.rendered} label={settings?.labels?.reading_time} />{/if}
+            {#if post.type === 'post'}<ReadingTime content={processedContent} label={settings?.labels?.reading_time} />{/if}
           </div>
         </header>
 
@@ -142,7 +165,7 @@
           {:else if post.meta?._me_template_type === 'diary'}<DevDiary {post} />{/if}
 
           <div bind:this={contentEl} class="prose dark:prose-invert max-w-none prose-headings:scroll-mt-20 prose-pre:p-0 article-content">
-            {@html post.content.rendered}
+            {@html processedContent}
           </div>
 
           {#if post.categories_data}
@@ -156,13 +179,13 @@
 
       <aside class="hidden lg:block xl:w-72 lg:w-64 flex-shrink-0">
         <div class="sticky top-24 space-y-12">
-          <TOC content={post.content.rendered} label={settings?.labels?.toc} />
+          <TOC content={processedContent} label={settings?.labels?.toc} />
           {#if post.type === 'post'}
             <div class="pt-10 border-t">
               <div class="text-xs font-bold mb-4 uppercase tracking-widest text-muted-foreground">
                 {settings?.labels?.article_info || 'Article Info'}
               </div>
-              <ReadingTime content={post.content.rendered} label={settings?.labels?.reading_time} />
+              <ReadingTime content={processedContent} label={settings?.labels?.reading_time} />
             </div>
           {/if}
           {#if settings?.widgets?.show_calendar}

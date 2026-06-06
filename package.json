@@ -28,11 +28,13 @@
   },
   "dependencies": {
     "@lucide/svelte": "^1.17.0",
+    "@types/marked": "^5.0.2",
     "@types/prismjs": "^1.26.6",
     "bits-ui": "^0.21.16",
     "class-variance-authority": "^0.7.1",
     "clsx": "^2.1.1",
     "date-fns": "^4.4.0",
+    "marked": "^18.0.5",
     "prismjs": "^1.30.0",
     "svelte-routing": "^2.13.0",
     "tailwind-merge": "^3.6.0",
