@@ -7,6 +7,7 @@
   import StickyNote from './StickyNote.svelte';
   import DeveloperCalendar from './DeveloperCalendar.svelte';
   import { t, type Language } from '$lib/i18n';
+  import { getRestUrl } from '$lib/api';
 
   let { slug = "", listType = "all" } = $props<{ slug?: string, listType?: string }>();
 
@@ -29,17 +30,17 @@
     loading = true;
     archiveTitle = "";
     try {
-      let endpoint = '/wp-json/wp/v2/posts?_embed';
+      let endpoint = 'wp/v2/posts?_embed';
       if (listType === 'category' && slug) {
-        const catRes = await fetch(`/wp-json/wp/v2/categories?slug=${slug}`);
+        const catRes = await fetch(getRestUrl(`wp/v2/categories?slug=${slug}`));
         const cats = await catRes.json();
         if (cats.length > 0) { endpoint += `&categories=${cats[0].id}`; archiveTitle = cats[0].name; }
       } else if (listType === 'tag' && slug) {
-        const tagRes = await fetch(`/wp-json/wp/v2/tags?slug=${slug}`);
+        const tagRes = await fetch(getRestUrl(`wp/v2/tags?slug=${slug}`));
         const tags = await tagRes.json();
         if (tags.length > 0) { endpoint += `&tags=${tags[0].id}`; archiveTitle = tags[0].name; }
       }
-      const [pRes, sRes] = await Promise.all([ fetch(endpoint), fetch('/wp-json/me/v1/settings') ]);
+      const [pRes, sRes] = await Promise.all([ fetch(getRestUrl(endpoint)), fetch(getRestUrl('me/v1/settings')) ]);
       posts = await pRes.json();
       settings = await sRes.json();
       const savedColumns = localStorage.getItem('listColumns');

@@ -1,5 +1,5 @@
 <script lang="ts">
-  import { onMount, mount, unmount } from 'svelte';
+  import { onMount, mount } from 'svelte';
   import { format } from 'date-fns';
   import { ChevronRight, Home, AlertCircle, Calendar } from '@lucide/svelte';
   import { marked } from 'marked';
@@ -18,6 +18,7 @@
   import Breadcrumbs from './Breadcrumbs.svelte';
   import { Button } from './ui/button';
   import { t, type Language } from '$lib/i18n';
+  import { getRestUrl } from '$lib/api';
 
   let { slug } = $props<{ slug: string }>();
 
@@ -39,12 +40,12 @@
     try {
       const actualSlug = slug.split('/').filter(Boolean).pop() || slug;
       const [postRes, settingsRes] = await Promise.all([
-        fetch(`/wp-json/wp/v2/posts?slug=${actualSlug}&_embed`),
-        fetch('/wp-json/me/v1/settings')
+        fetch(getRestUrl(`wp/v2/posts?slug=${actualSlug}&_embed`)),
+        fetch(getRestUrl('me/v1/settings'))
       ]);
       let data = await postRes.json();
       if (data.length === 0) {
-        const pageRes = await fetch(`/wp-json/wp/v2/pages?slug=${actualSlug}&_embed`);
+        const pageRes = await fetch(getRestUrl(`wp/v2/pages?slug=${actualSlug}&_embed`));
         data = await pageRes.json();
       }
       post = data.length > 0 ? data[0] : null;

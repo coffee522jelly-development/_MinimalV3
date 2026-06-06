@@ -42,7 +42,8 @@ function minimal_engineer_scripts() {
             wp_localize_script( 'minimal-engineer-js', 'wpData', array(
                 'root' => esc_url_raw( rest_url() ),
                 'nonce' => wp_create_nonce( 'wp_rest' ),
-                'siteName' => get_bloginfo( 'name' )
+                'siteName' => get_bloginfo( 'name' ),
+                'base' => parse_url( home_url(), PHP_URL_PATH ) ?: '/'
             ) );
         }
 
@@ -54,6 +55,17 @@ function minimal_engineer_scripts() {
     }
 }
 add_action( 'wp_enqueue_scripts', 'minimal_engineer_scripts' );
+
+/**
+ * Add type="module" to the script tag.
+ */
+function minimal_engineer_script_loader_tag( $tag, $handle, $src ) {
+    if ( 'minimal-engineer-js' === $handle ) {
+        $tag = '<script type="module" src="' . esc_url( $src ) . '" id="' . esc_attr( $handle ) . '-js"></script>';
+    }
+    return $tag;
+}
+add_filter( 'script_loader_tag', 'minimal_engineer_script_loader_tag', 10, 3 );
 
 /**
  * Register Metadata and Custom Meta Box

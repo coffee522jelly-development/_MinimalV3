@@ -3,6 +3,7 @@
   import { Button } from './ui/button';
   import { Send } from '@lucide/svelte';
   import { t, type Language } from '$lib/i18n';
+  import { getRestUrl, getNonce } from '$lib/api';
 
   let name = $state("");
   let email = $state("");
@@ -13,7 +14,7 @@
 
   onMount(async () => {
     try {
-      const res = await fetch('/wp-json/me/v1/settings');
+      const res = await fetch(getRestUrl('me/v1/settings'));
       settings = await res.json();
     } catch (e) {}
   });
@@ -21,8 +22,8 @@
   async function handleSubmit() {
     status = "submitting";
     try {
-      const nonce = (window as any).wpData?.nonce || "";
-      const res = await fetch('/wp-json/me/v1/contact', {
+      const nonce = getNonce();
+      const res = await fetch(getRestUrl('me/v1/contact'), {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',

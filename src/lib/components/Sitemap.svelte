@@ -1,6 +1,7 @@
 <script lang="ts">
   import { onMount } from 'svelte';
   import { t, type Language } from '$lib/i18n';
+  import { getRestUrl } from '$lib/api';
 
   let pages = $state<any[]>([]);
   let categories = $state<any[]>([]);
@@ -12,11 +13,11 @@
   onMount(async () => {
     try {
       const [pRes, cRes, tRes, poRes, sRes] = await Promise.all([
-        fetch('/wp-json/wp/v2/pages?per_page=100'),
-        fetch('/wp-json/wp/v2/categories?per_page=100'),
-        fetch('/wp-json/wp/v2/tags?per_page=100'),
-        fetch('/wp-json/wp/v2/posts?per_page=20'),
-        fetch('/wp-json/me/v1/settings')
+        fetch(getRestUrl('wp/v2/pages?per_page=100')),
+        fetch(getRestUrl('wp/v2/categories?per_page=100')),
+        fetch(getRestUrl('wp/v2/tags?per_page=100')),
+        fetch(getRestUrl('wp/v2/posts?per_page=20')),
+        fetch(getRestUrl('me/v1/settings'))
       ]);
       pages = await pRes.json();
       categories = await cRes.json();

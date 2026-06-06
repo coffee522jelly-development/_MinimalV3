@@ -2,6 +2,7 @@
   import { onMount } from 'svelte';
   import { Folder } from '@lucide/svelte';
   import CategoryNode from './CategoryNode.svelte';
+  import { getRestUrl } from '$lib/api';
 
   let { label = "Categories" } = $props<{ label?: string }>();
 
@@ -10,7 +11,7 @@
 
   onMount(async () => {
     try {
-      const res = await fetch('/wp-json/wp/v2/categories?per_page=100&orderby=name&order=asc');
+      const res = await fetch(getRestUrl('wp/v2/categories?per_page=100&orderby=name&order=asc'));
       categories = await res.json();
     } catch (e) {
       console.error(e);

@@ -8,15 +8,17 @@
   import PostDetail from "./lib/components/PostDetail.svelte";
   import Sitemap from "./lib/components/Sitemap.svelte";
   import ContactForm from "./lib/components/ContactForm.svelte";
+  import { getBase } from "./lib/api";
   import './app.css';
 
   export let url = "";
+  const base = getBase();
 </script>
 
 <div class="min-h-screen flex flex-col bg-background text-foreground">
   <Header />
   <main class="flex-1">
-    <Router {url}>
+    <Router {url} basepath={base}>
       <Route path="/">
          <PostList />
       </Route>

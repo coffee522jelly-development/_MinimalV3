@@ -5,6 +5,7 @@
   import { Button } from './ui/button';
   import { cn } from '$lib/utils';
   import { t, type Language } from '$lib/i18n';
+  import { getRestUrl } from '$lib/api';
 
   let currentDate = $state(new Date());
   let postDates = $state<Date[]>([]);
@@ -13,8 +14,8 @@
   onMount(async () => {
     try {
       const [pRes, sRes] = await Promise.all([
-        fetch('/wp-json/wp/v2/posts?per_page=100&_fields=date'),
-        fetch('/wp-json/me/v1/settings')
+        fetch(getRestUrl('wp/v2/posts?per_page=100&_fields=date')),
+        fetch(getRestUrl('me/v1/settings'))
       ]);
       const posts = await pRes.json();
       settings = await sRes.json();

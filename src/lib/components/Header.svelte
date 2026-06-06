@@ -4,6 +4,7 @@
   import { Button } from './ui/button';
   import { cn } from '$lib/utils';
   import { t, type Language } from '$lib/i18n';
+  import { getRestUrl } from '$lib/api';
 
   let isDark = $state(false);
   let isMobileMenuOpen = $state(false);
@@ -20,8 +21,8 @@
 
     try {
       const [mRes, sRes] = await Promise.all([
-        fetch('/wp-json/me/v1/menu'),
-        fetch('/wp-json/me/v1/settings')
+        fetch(getRestUrl('me/v1/menu')),
+        fetch(getRestUrl('me/v1/settings'))
       ]);
       menuItems = await mRes.json();
       settings = await sRes.json();
