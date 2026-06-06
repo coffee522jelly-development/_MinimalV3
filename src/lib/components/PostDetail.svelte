@@ -1,8 +1,9 @@
 <script lang="ts">
   import { onMount, mount, unmount } from 'svelte';
   import { format } from 'date-fns';
-  import { AlertCircle, Calendar } from '@lucide/svelte';
+  import { ChevronRight, Home, AlertCircle, Calendar } from '@lucide/svelte';
   import { marked } from 'marked';
+  import mermaid from 'mermaid';
   import ReadingTime from './ReadingTime.svelte';
   import TOC from './TOC.svelte';
   import CategoryNav from './CategoryNav.svelte';
@@ -25,9 +26,13 @@
   let contentEl = $state<HTMLElement | null>(null);
   let settings = $state<any>(null);
 
-  onMount(async () => { fetchData(); });
+  onMount(async () => {
+    mermaid.initialize({ startOnLoad: false, theme: 'default' });
+    fetchData();
+  });
+
   $effect(() => { if (slug) fetchData(); });
-  $effect(() => { if (post && contentEl) { processCodeBlocks(); } });
+  $effect(() => { if (post && contentEl) { processContent(); } });
 
   async function fetchData() {
     loading = true;
@@ -47,21 +52,41 @@
     } catch (e) { console.error(e); post = null; } finally { loading = false; }
   }
 
-  function processCodeBlocks() {
+  async function processContent() {
     if (!contentEl) return;
+
+    // 1. Process Code Blocks
     const preBlocks = contentEl.querySelectorAll('pre:not([data-processed])');
-    preBlocks.forEach((pre) => {
+    for (const pre of preBlocks) {
       const code = pre.querySelector('code');
-      if (!code) return;
+      if (!code) continue;
+
       const content = code.textContent || "";
       const langClass = Array.from(code.classList).find(c => c.startsWith('language-'));
       const language = langClass ? langClass.replace('language-', '') : 'javascript';
-      pre.setAttribute('data-processed', 'true');
-      pre.style.display = 'none';
-      const container = document.createElement('div');
-      pre.parentNode?.insertBefore(container, pre);
-      mount(CodeBlock, { target: container, props: { code: content, language } });
-    });
+
+      if (language === 'mermaid') {
+        pre.setAttribute('data-processed', 'true');
+        const id = `mermaid-${Math.random().toString(36).substr(2, 9)}`;
+        const container = document.createElement('div');
+        container.className = 'mermaid-container my-8 flex justify-center';
+        pre.parentNode?.insertBefore(container, pre);
+        pre.remove();
+
+        try {
+          const { svg } = await mermaid.render(id, content);
+          container.innerHTML = svg;
+        } catch (err) {
+          container.innerHTML = `<pre class="text-destructive">Mermaid Error: ${err}</pre>`;
+        }
+      } else {
+        pre.setAttribute('data-processed', 'true');
+        pre.style.display = 'none';
+        const container = document.createElement('div');
+        pre.parentNode?.insertBefore(container, pre);
+        mount(CodeBlock, { target: container, props: { code: content, language } });
+      }
+    }
   }
 
   let processedContent = $derived.by(() => {
@@ -98,9 +123,7 @@
       <aside class="hidden xl:block w-72 flex-shrink-0">
         <div class="sticky top-24 space-y-12">
           <CategoryNav label={settings?.labels?.categories || t('categories', lang)} />
-          {#if settings?.widgets?.sticky_note}
-            <StickyNote text={settings.widgets.sticky_note} color={settings.widgets.sticky_note_color} />
-          {/if}
+          {#if settings?.widgets?.sticky_note}<StickyNote text={settings.widgets.sticky_note} color={settings.widgets.sticky_note_color} />{/if}
         </div>
       </aside>
 
@@ -152,4 +175,5 @@
 
 <style>
   :global(.article-content h2) { border-bottom: 2px solid var(--primary-color); padding-bottom: 0.5rem; margin-top: 3rem; }
+  :global(.mermaid-container svg) { max-width: 100%; height: auto; }
 </style>
