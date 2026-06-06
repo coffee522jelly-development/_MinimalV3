@@ -8,7 +8,17 @@
   import 'prismjs/components/prism-bash';
   import 'prismjs/components/prism-json';
   import 'prismjs/components/prism-css';
+  import 'prismjs/components/prism-rust';
+  import 'prismjs/components/prism-cpp';
+  import 'prismjs/components/prism-python';
+  import 'prismjs/components/prism-go';
+  import 'prismjs/components/prism-php';
+  import 'prismjs/components/prism-ruby';
+  import 'prismjs/components/prism-java';
+  import 'prismjs/components/prism-sql';
+  import 'prismjs/components/prism-markdown';
   import 'prismjs/themes/prism-tomorrow.css';
+  import { getRestUrl } from '$lib/api';
 
   let { code, language = 'javascript', showLineNumbers = true } = $props<{
     code: string;
@@ -23,7 +33,7 @@
   onMount(async () => {
     highlight();
     try {
-      const res = await fetch('/wp-json/me/v1/settings');
+      const res = await fetch(getRestUrl('me/v1/settings'));
       settings = await res.json();
     } catch (e) {}
   });

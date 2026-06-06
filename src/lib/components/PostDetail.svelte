@@ -62,11 +62,25 @@
       const code = pre.querySelector('code');
       if (!code) continue;
 
-      const content = code.textContent || "";
+      const content = (code.textContent || "").trim();
       const langClass = Array.from(code.classList).find(c => c.startsWith('language-'));
-      const language = langClass ? langClass.replace('language-', '') : 'javascript';
+      let language = langClass ? langClass.replace('language-', '') : 'javascript';
 
-      if (language === 'mermaid') {
+      // Enhanced Mermaid Detection: Check class OR content signature
+      const isMermaid = language === 'mermaid' ||
+                        content.startsWith('graph ') ||
+                        content.startsWith('flowchart ') ||
+                        content.startsWith('sequenceDiagram') ||
+                        content.startsWith('gantt') ||
+                        content.startsWith('classDiagram') ||
+                        content.startsWith('stateDiagram') ||
+                        content.startsWith('pie') ||
+                        content.startsWith('erDiagram') ||
+                        content.startsWith('journey') ||
+                        content.startsWith('mindmap') ||
+                        content.startsWith('timeline');
+
+      if (isMermaid) {
         pre.setAttribute('data-processed', 'true');
         const id = `mermaid-${Math.random().toString(36).substr(2, 9)}`;
         const container = document.createElement('div');
