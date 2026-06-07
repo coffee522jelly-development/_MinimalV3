@@ -31,21 +31,19 @@
   }>();
 
   let copied = $state(false);
-  let highlightedCode = $state("");
   let settings = $state<any>(null);
 
   onMount(async () => {
-    highlight();
     try {
       const res = await fetch(getRestUrl('me/v1/settings'));
       settings = await res.json();
     } catch (e) {}
   });
 
-  function highlight() {
-    const lang = Prism.languages[language] || Prism.languages.javascript;
-    highlightedCode = Prism.highlight(code, lang, language);
-  }
+  let highlightedCode = $derived.by(() => {
+    const grammar = Prism.languages[language] || Prism.languages.clike || Prism.languages.javascript;
+    return Prism.highlight(code, grammar, language);
+  });
 
   async function copyToClipboard() {
     await navigator.clipboard.writeText(code);
@@ -58,11 +56,11 @@
   let fontSize = $derived(settings?.code_block?.font_size || '14');
 </script>
 
-<div class="my-6 overflow-hidden rounded-lg border shadow-xl" style="background-color: {bgColor}; color: #f4f4f5;">
+<div class="my-6 overflow-hidden rounded-lg border shadow-xl not-prose" style="background-color: {bgColor}; color: #f4f4f5;">
   <div class="flex items-center justify-between border-b border-white/10 bg-black/20 px-4 py-2">
     <div class="flex items-center gap-2">
       <div class="flex gap-1.5"><div class="h-3 w-3 rounded-full bg-red-500/80"></div><div class="h-3 w-3 rounded-full bg-amber-500/80"></div><div class="h-3 w-3 rounded-full bg-emerald-500/80"></div></div>
-      <span class="ml-2 text-xs font-medium text-zinc-400 font-mono">{language}</span>
+      <span class="ml-2 text-xs font-medium text-zinc-400 font-mono capitalize">{language === 'javascript' && !code.includes('console.log') ? 'code' : language}</span>
     </div>
     <Button variant="ghost" size="icon" class="h-8 w-8 text-zinc-400 hover:text-white" onclick={copyToClipboard}>
       {#if copied}<Check class="h-4 w-4 text-emerald-500" />{:else}<Copy class="h-4 w-4" />{/if}
