@@ -3,9 +3,9 @@
   import { Check, Copy } from '@lucide/svelte';
   import { Button } from './ui/button';
   import Prism from 'prismjs';
-  // Base languages
-  import 'prismjs/components/prism-clike';
+  // Base languages - ensure markup is loaded very early
   import 'prismjs/components/prism-markup';
+  import 'prismjs/components/prism-clike';
   import 'prismjs/components/prism-javascript';
   import 'prismjs/components/prism-typescript';
   import 'prismjs/components/prism-bash';
@@ -40,15 +40,28 @@
     } catch (e) {}
   });
 
+  // Helper to escape HTML for fallback
+  function escapeHtml(text: string) {
+    return text
+      .replace(/&/g, "&amp;")
+      .replace(/</g, "&lt;")
+      .replace(/>/g, "&gt;")
+      .replace(/"/g, "&quot;")
+      .replace(/'/g, "&#039;");
+  }
+
   let highlightedCode = $derived.by(() => {
     try {
-      const validLang = language && Prism.languages[language] ? language : 'javascript';
+      const validLang = language && Prism.languages[language] ? language : '';
+      if (!validLang) return escapeHtml(code);
+
       const grammar = Prism.languages[validLang];
-      if (!grammar) return code; // Fallback to raw text if no grammar found
+      if (!grammar) return escapeHtml(code);
+
       return Prism.highlight(code, grammar, validLang);
     } catch (e) {
       console.error('Prism highlighting error:', e);
-      return code; // Return raw code on error to prevent UI crash
+      return escapeHtml(code);
     }
   });
 
@@ -95,7 +108,7 @@
           {#each lines as _, i}<span>{i + 1}</span>{/each}
         </div>
       {/if}
-      <pre data-processed="true" class="flex-1 !m-0 !p-0 !bg-transparent"><code class="language-{language}">{@html highlightedCode}</code></pre>
+      <pre data-processed="true" class="flex-1 !m-0 !p-0 !bg-transparent !whitespace-pre-wrap !break-all"><code class="language-{language}">{@html highlightedCode}</code></pre>
     </div>
   </div>
 </div>

@@ -58,8 +58,11 @@
 
     blocks.forEach((block) => {
       try {
+        if (block.getAttribute('data-processed')) return;
+
         const pre = block.tagName === 'PRE' ? block : block.querySelector('pre');
-        if (!pre || pre.getAttribute('data-processed')) return;
+        if (!pre) return;
+        if (pre.getAttribute('data-processed')) return;
 
         const code = pre.querySelector('code');
         const content = (code ? code.textContent : pre.textContent) || "";
