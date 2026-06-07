@@ -7,20 +7,12 @@ A minimal, high-performance WordPress theme designed for developers and engineer
 ### パーマリンク設定 (Permalinks)
 WordPress のパーマリンク設定を **「投稿名」 (Post name)** にすることを強く推奨します。
 
-### Markdown & Mermaid の使い方
-本テーマは Markdown と Mermaid.js を標準サポートしています。
+### コードブロックの使い方
+本テーマは PrismJS を使用した Mac ターミナル風のコードブロックをサポートしています。
 
-- **Markdown**: 記事本文に直接 Markdown を記述できます。自動判別されますが、エディタ右側の「Theme Post Settings」から明示的にオン/オフを切り替えることも可能です。
-- **Mermaid**: ブロックエディタの「コード」ブロックまたは Markdown のコードフェンスで、言語を `mermaid` に指定して記述すると、自動的に図（フローチャート、シーケンス図等）として描画されます。
-
-例:
-\```mermaid
-graph TD;
-    A-->B;
-    A-->C;
-    B-->D;
-    C-->D;
-\```
+- **自動判別**: コードブロックの言語設定に基づき、自動的にシンタックスハイライトと Mac 風のウィンドウ装飾が適用されます。
+- **コピー機能**: ブロック右上のアイコンからワンクリックでコードをコピーできます。
+- **対応言語**: TypeScript, JavaScript, Rust, Python, Go, C++, SQL など多数の言語に対応しています。
 
 ---
 

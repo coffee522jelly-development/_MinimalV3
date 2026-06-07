@@ -2,7 +2,6 @@
   import { onMount, mount } from 'svelte';
   import { format } from 'date-fns';
   import { ChevronRight, Home, AlertCircle, Calendar } from '@lucide/svelte';
-  import { marked } from 'marked';
   import ReadingTime from './ReadingTime.svelte';
   import TOC from './TOC.svelte';
   import CategoryNav from './CategoryNav.svelte';
@@ -54,7 +53,7 @@
   async function processContent() {
     if (!contentEl) return;
 
-    // 1. Process Code Blocks
+    // Process Code Blocks only (Removed Mermaid)
     const preBlocks = contentEl.querySelectorAll('pre:not([data-processed])');
     for (const pre of preBlocks) {
       const code = pre.querySelector('code');
@@ -64,53 +63,15 @@
       const langClass = Array.from(code.classList).find(c => c.startsWith('language-'));
       let language = langClass ? langClass.replace('language-', '') : '';
 
-      // Enhanced Mermaid Detection: Check class OR content signature
-      const isMermaid = language === 'mermaid' ||
-                        /^(graph|flowchart|sequenceDiagram|gantt|classDiagram|stateDiagram|pie|erDiagram|journey|mindmap|timeline)\s/m.test(content);
-
-      if (isMermaid) {
-        pre.setAttribute('data-processed', 'true');
-        const id = `mermaid-${Math.random().toString(36).substr(2, 9)}`;
-        const container = document.createElement('div');
-        container.className = 'mermaid-container my-8 flex justify-center';
-        pre.parentNode?.insertBefore(container, pre);
-        pre.remove();
-
-        try {
-          // Dynamic import of mermaid to avoid bloating the main bundle
-          const mermaid = (await import('mermaid')).default;
-          mermaid.initialize({ startOnLoad: false, theme: 'default' });
-          const { svg } = await mermaid.render(id, content);
-          container.innerHTML = svg;
-        } catch (err) {
-          container.innerHTML = `<pre class="text-destructive">Mermaid Error: ${err}</pre>`;
-        }
-      } else {
-        pre.setAttribute('data-processed', 'true');
-        (pre as HTMLElement).style.display = 'none';
-        const container = document.createElement('div');
-        pre.parentNode?.insertBefore(container, pre);
-        mount(CodeBlock, { target: container, props: { code: content, language } });
-      }
+      pre.setAttribute('data-processed', 'true');
+      (pre as HTMLElement).style.display = 'none';
+      const container = document.createElement('div');
+      pre.parentNode?.insertBefore(container, pre);
+      mount(CodeBlock, { target: container, props: { code: content, language } });
     }
   }
 
-  let processedContent = $derived.by(() => {
-    if (!post) return "";
-    const raw = post.content.rendered;
-    const setting = post.meta?._me_parse_markdown || 'auto';
-    let shouldParse = setting === 'on';
-    if (setting === 'auto') {
-      const mdRegex = /^(#|>\s|\*\s|-\s|\d+\.\s|\[.*\]\(.*\)|!\[.*\]\(.*\)|```)/m;
-      const hasHtml = /<[a-z][\s\S]*>/i.test(raw);
-      shouldParse = mdRegex.test(raw) && (!hasHtml || raw.startsWith('<p>'));
-    }
-    if (shouldParse) {
-      const clean = raw.replace(/^<p>/, '').replace(/<\/p>$/, '');
-      return marked.parse(clean);
-    }
-    return raw;
-  });
+  let processedContent = $derived(post ? post.content.rendered : "");
 
   let lang = $derived(settings?.language as Language || 'en');
   let primaryColor = $derived(settings?.primary_color || '#18181b');
@@ -181,5 +142,4 @@
 
 <style>
   :global(.article-content h2) { border-bottom: 2px solid var(--primary-color); padding-bottom: 0.5rem; margin-top: 3rem; }
-  :global(.mermaid-container svg) { max-width: 100%; height: auto; }
 </style>

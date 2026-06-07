@@ -3,13 +3,14 @@
   import { Plus, ArrowUp, Mail, FileText } from '@lucide/svelte';
   import { Button } from './ui/button';
   import { cn } from '$lib/utils';
+  import { getRestUrl } from '$lib/api';
 
   let isOpen = $state(false);
   let settings = $state<any>(null);
 
   onMount(async () => {
     try {
-      const res = await fetch('/wp-json/me/v1/settings');
+      const res = await fetch(getRestUrl('me/v1/settings'));
       settings = await res.json();
     } catch (e) {
       console.error(e);

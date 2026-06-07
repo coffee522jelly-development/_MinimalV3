@@ -73,7 +73,6 @@ add_filter( 'script_loader_tag', 'minimal_engineer_script_loader_tag', 10, 3 );
 function minimal_engineer_register_meta() {
     $post_meta_fields = array(
         '_me_template_type' => 'string',
-        '_me_parse_markdown' => 'string',
         '_me_app_subtitle' => 'string',
         '_me_app_description' => 'string',
         '_me_app_link_web' => 'string',
@@ -120,26 +119,30 @@ function minimal_engineer_render_meta_box( $post ) {
     wp_nonce_field( 'me_save_meta_box_data', 'me_meta_box_nonce' );
 
     $type = get_post_meta( $post->ID, '_me_template_type', true );
-    $markdown = get_post_meta( $post->ID, '_me_parse_markdown', true );
     $version = get_post_meta( $post->ID, '_me_release_version', true );
     $subtitle = get_post_meta( $post->ID, '_me_app_subtitle', true );
     $link_web = get_post_meta( $post->ID, '_me_app_link_web', true );
     $link_github = get_post_meta( $post->ID, '_me_app_link_github', true );
     $link_appstore = get_post_meta( $post->ID, '_me_app_link_appstore', true );
     $link_googleplay = get_post_meta( $post->ID, '_me_app_link_googleplay', true );
+    $app_logo_id = get_post_meta( $post->ID, '_me_app_logo_id', true );
     $app_status = get_post_meta( $post->ID, '_me_app_status', true );
+    $diary_date = get_post_meta( $post->ID, '_me_diary_date', true );
+    $diary_hours = get_post_meta( $post->ID, '_me_diary_hours', true );
 
     $is_ja = get_theme_mod('me_language', 'en') === 'ja';
     $labels = array(
         'type' => $is_ja ? '投稿タイプ' : 'Template Type',
-        'markdown' => $is_ja ? 'Markdown パース' : 'Markdown Parsing',
         'version' => $is_ja ? 'バージョン' : 'Version',
         'subtitle' => $is_ja ? 'アプリのサブタイトル' : 'App Subtitle',
         'web' => $is_ja ? '公式サイトURL' : 'Website URL',
         'github' => $is_ja ? 'GitHub URL' : 'GitHub URL',
         'appstore' => 'App Store URL',
         'googleplay' => 'Google Play URL',
+        'logo_id' => $is_ja ? 'アプリロゴ画像ID' : 'App Logo Attachment ID',
         'status' => $is_ja ? '開発状況' : 'Status',
+        'diary_date' => $is_ja ? '作業日' : 'Work Date',
+        'diary_hours' => $is_ja ? '作業時間' : 'Work Hours',
         'auto' => $is_ja ? '自動判別' : 'Auto-detect',
         'on' => $is_ja ? '常にパース' : 'Always Parse',
         'off' => $is_ja ? '無効' : 'Disable',
@@ -155,14 +158,6 @@ function minimal_engineer_render_meta_box( $post ) {
         </select>
     </div>
 
-    <div style="margin-bottom: 15px;">
-        <label for="me_parse_markdown"><strong><?php echo $labels['markdown']; ?>:</strong></label>
-        <select name="me_parse_markdown" id="me_parse_markdown" class="widefat" style="margin-top: 5px;">
-            <option value="auto" <?php selected( $markdown, 'auto' ); ?>><?php echo $labels['auto']; ?></option>
-            <option value="on" <?php selected( $markdown, 'on' ); ?>><?php echo $labels['on']; ?></option>
-            <option value="off" <?php selected( $markdown, 'off' ); ?>><?php echo $labels['off']; ?></option>
-        </select>
-    </div>
 
     <div class="me-meta-group" data-type="release" style="display: <?php echo $type === 'release' ? 'block' : 'none'; ?>; margin-bottom: 15px;">
         <label for="me_release_version"><strong><?php echo $labels['version']; ?>:</strong></label>
@@ -187,6 +182,17 @@ function minimal_engineer_render_meta_box( $post ) {
 
         <p><label for="me_app_link_googleplay"><strong><?php echo $labels['googleplay']; ?>:</strong></label>
         <input type="url" name="me_app_link_googleplay" id="me_app_link_googleplay" value="<?php echo esc_url( $link_googleplay ); ?>" class="widefat"></p>
+
+        <p><label for="me_app_logo_id"><strong><?php echo $labels['logo_id']; ?>:</strong></label>
+        <input type="number" name="me_app_logo_id" id="me_app_logo_id" value="<?php echo esc_attr( $app_logo_id ); ?>" class="widefat"></p>
+    </div>
+
+    <div class="me-meta-group" data-type="diary" style="display: <?php echo $type === 'diary' ? 'block' : 'none'; ?>;">
+        <p><label for="me_diary_date"><strong><?php echo $labels['diary_date']; ?>:</strong></label>
+        <input type="date" name="me_diary_date" id="me_diary_date" value="<?php echo esc_attr( $diary_date ); ?>" class="widefat"></p>
+
+        <p><label for="me_diary_hours"><strong><?php echo $labels['diary_hours']; ?>:</strong></label>
+        <input type="text" name="me_diary_hours" id="me_diary_hours" value="<?php echo esc_attr( $diary_hours ); ?>" class="widefat" placeholder="e.g. 3h 30m"></p>
     </div>
 
     <script>
@@ -207,7 +213,6 @@ function minimal_engineer_save_meta_box_data( $post_id ) {
 
     $fields = array(
         'me_template_type' => '_me_template_type',
-        'me_parse_markdown' => '_me_parse_markdown',
         'me_release_version' => '_me_release_version',
         'me_app_subtitle' => '_me_app_subtitle',
         'me_app_status' => '_me_app_status',
@@ -215,6 +220,9 @@ function minimal_engineer_save_meta_box_data( $post_id ) {
         'me_app_link_github' => '_me_app_link_github',
         'me_app_link_appstore' => '_me_app_link_appstore',
         'me_app_link_googleplay' => '_me_app_link_googleplay',
+        'me_app_logo_id' => '_me_app_logo_id',
+        'me_diary_date' => '_me_diary_date',
+        'me_diary_hours' => '_me_diary_hours',
     );
 
     foreach ( $fields as $key => $meta_key ) {
@@ -240,7 +248,7 @@ function minimal_engineer_rest_prepare_post( $data, $post, $request ) {
     $_data['featured_image_url'] = $featured_media_id ? get_the_post_thumbnail_url( $post->ID, 'full' ) : null;
     $logo_id = get_post_meta( $post->ID, '_me_app_logo_id', true );
     $_data['app_logo_url'] = $logo_id ? wp_get_attachment_url( $logo_id ) : null;
-    $meta_fields = array( '_me_template_type', '_me_parse_markdown', '_me_app_subtitle', '_me_app_description', '_me_app_link_web', '_me_app_link_github', '_me_app_link_appstore', '_me_app_link_googleplay', '_me_app_logo_id', '_me_app_screenshots', '_me_app_price', '_me_app_os', '_me_app_status', '_me_release_version', '_me_release_date', '_me_diary_date', '_me_diary_hours' );
+    $meta_fields = array( '_me_template_type', '_me_app_subtitle', '_me_app_description', '_me_app_link_web', '_me_app_link_github', '_me_app_link_appstore', '_me_app_link_googleplay', '_me_app_logo_id', '_me_app_screenshots', '_me_app_price', '_me_app_os', '_me_app_status', '_me_release_version', '_me_release_date', '_me_diary_date', '_me_diary_hours' );
     foreach ($meta_fields as $field) { $_data['meta'][$field] = get_post_meta($post->ID, $field, true); }
     $data->data = $_data;
     return $data;
@@ -270,8 +278,6 @@ function minimal_engineer_customize_register( $wp_customize ) {
         'sticky_text' => $is_ja ? '付箋のテキスト' : 'Sticky Note Text',
         'sticky_color' => $is_ja ? '付箋の色' : 'Sticky Note Color',
         'show_calendar' => $is_ja ? 'カレンダーを表示する' : 'Show Developer Calendar',
-        'markdown' => $is_ja ? 'Markdown設定' : 'Markdown Settings',
-        'md_auto' => $is_ja ? 'Markdownの自動判別を有効にする' : 'Enable Markdown Auto-detection',
         'colors' => $is_ja ? 'テーマカラー' : 'Theme Colors',
         'primary' => $is_ja ? 'プライマリーカラー' : 'Primary Color',
         'sns' => $is_ja ? 'SNS リンク' : 'SNS Links',
@@ -318,10 +324,6 @@ function minimal_engineer_customize_register( $wp_customize ) {
     $wp_customize->add_setting( 'me_show_calendar', array( 'default' => true, 'transport' => 'refresh' ) );
     $wp_customize->add_control( 'me_show_calendar', array( 'label' => $labels['show_calendar'], 'section' => 'me_widgets', 'type' => 'checkbox' ) );
 
-    $wp_customize->add_section( 'me_markdown', array( 'title' => $labels['markdown'], 'priority' => 38 ) );
-    $wp_customize->add_setting( 'me_enable_markdown_auto', array( 'default' => true, 'transport' => 'refresh' ) );
-    $wp_customize->add_control( 'me_enable_markdown_auto', array( 'label' => $labels['md_auto'], 'section' => 'me_markdown', 'type' => 'checkbox' ) );
-
     $wp_customize->add_section( 'me_colors', array( 'title' => $labels['colors'], 'priority' => 35 ) );
     $wp_customize->add_setting( 'me_primary_color', array( 'default' => '#18181b', 'transport' => 'refresh' ) );
     $wp_customize->add_control( new WP_Customize_Color_Control( $wp_customize, 'me_primary_color', array( 'label' => $labels['primary'], 'section' => 'me_colors' ) ) );
@@ -349,7 +351,7 @@ add_action( 'rest_api_init', function() {
                     if ($post) { $fab_pages[] = array( 'title' => $post->post_title, 'url' => str_replace( home_url(), '', get_permalink($page_id) ) ); }
                 }
             }
-            return array( 'language' => get_theme_mod( 'me_language', 'en' ), 'logo_text' => get_theme_mod( 'me_logo_text', 'Minimal Engineer' ), 'default_columns' => (int) get_theme_mod( 'me_default_columns', 1 ), 'primary_color' => get_theme_mod( 'me_primary_color', '#18181b' ), 'code_block' => array( 'bg_color' => get_theme_mod( 'me_code_bg', '#09090b' ), 'font_size' => get_theme_mod( 'me_code_font_size', '14' ) ), 'labels' => array( 'categories' => get_theme_mod( 'me_label_categories', '' ), 'toc' => get_theme_mod( 'me_label_toc', '' ), 'article_info' => get_theme_mod( 'me_label_article_info', '' ), 'reading_time' => get_theme_mod( 'me_label_reading_time', '' ) ), 'fab' => array( 'show_contact' => (bool) get_theme_mod( 'me_fab_show_contact', true ), 'pages' => $fab_pages ), 'widgets' => array( 'sticky_note' => get_theme_mod( 'me_sticky_note_text', '' ), 'sticky_note_color' => get_theme_mod( 'me_sticky_note_color', 'yellow' ), 'show_calendar' => (bool) get_theme_mod( 'me_show_calendar', true ) ), 'markdown' => array( 'auto_detect' => (bool) get_theme_mod( 'me_enable_markdown_auto', true ) ), 'sns' => array( 'github' => get_theme_mod( 'me_sns_github' ), 'x' => get_theme_mod( 'me_sns_x' ), 'youtube' => get_theme_mod( 'me_sns_youtube' ), 'qiita' => get_theme_mod( 'me_sns_qiita' ), 'zenn' => get_theme_mod( 'me_sns_zenn' ) ) );
+            return array( 'language' => get_theme_mod( 'me_language', 'en' ), 'logo_text' => get_theme_mod( 'me_logo_text', 'Minimal Engineer' ), 'default_columns' => (int) get_theme_mod( 'me_default_columns', 1 ), 'primary_color' => get_theme_mod( 'me_primary_color', '#18181b' ), 'code_block' => array( 'bg_color' => get_theme_mod( 'me_code_bg', '#09090b' ), 'font_size' => get_theme_mod( 'me_code_font_size', '14' ) ), 'labels' => array( 'categories' => get_theme_mod( 'me_label_categories', '' ), 'toc' => get_theme_mod( 'me_label_toc', '' ), 'article_info' => get_theme_mod( 'me_label_article_info', '' ), 'reading_time' => get_theme_mod( 'me_label_reading_time', '' ) ), 'fab' => array( 'show_contact' => (bool) get_theme_mod( 'me_fab_show_contact', true ), 'pages' => $fab_pages ), 'widgets' => array( 'sticky_note' => get_theme_mod( 'me_sticky_note_text', '' ), 'sticky_note_color' => get_theme_mod( 'me_sticky_note_color', 'yellow' ), 'show_calendar' => (bool) get_theme_mod( 'me_show_calendar', true ) ), 'sns' => array( 'github' => get_theme_mod( 'me_sns_github' ), 'x' => get_theme_mod( 'me_sns_x' ), 'youtube' => get_theme_mod( 'me_sns_youtube' ), 'qiita' => get_theme_mod( 'me_sns_qiita' ), 'zenn' => get_theme_mod( 'me_sns_zenn' ) ) );
         },
         'permission_callback' => '__return_true'
     ) );
