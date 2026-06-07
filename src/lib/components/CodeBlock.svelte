@@ -56,16 +56,16 @@
   let fontSize = $derived(settings?.code_block?.font_size || '14');
 </script>
 
-<div class="my-8 overflow-hidden rounded-xl border border-white/10 shadow-2xl not-prose" style="background-color: {bgColor}; color: #f4f4f5;">
-  <div class="flex items-center justify-between bg-gradient-to-b from-white/10 to-transparent px-4 py-3">
+<div class="my-8 overflow-hidden rounded-xl border border-white/10 shadow-2xl not-prose flex flex-col" style="background-color: {bgColor}; color: #f4f4f5;">
+  <div class="flex items-center justify-between bg-white/5 px-4 py-3 border-b border-white/5">
     <div class="flex items-center gap-3">
       <div class="flex gap-2">
-        <div class="h-3 w-3 rounded-full bg-[#ff5f56] shadow-sm"></div>
-        <div class="h-3 w-3 rounded-full bg-[#ffbd2e] shadow-sm"></div>
-        <div class="h-3 w-3 rounded-full bg-[#27c93f] shadow-sm"></div>
+        <div class="h-3 w-3 rounded-full bg-[#ff5f56]"></div>
+        <div class="h-3 w-3 rounded-full bg-[#ffbd2e]"></div>
+        <div class="h-3 w-3 rounded-full bg-[#27c93f]"></div>
       </div>
-      <span class="ml-2 text-[11px] font-bold text-zinc-400 font-mono tracking-wider uppercase opacity-80">
-        {language || 'code'}
+      <span class="ml-2 text-[10px] font-bold text-zinc-500 font-mono tracking-widest uppercase">
+        {language || 'CODE'}
       </span>
     </div>
     <div class="flex items-center">

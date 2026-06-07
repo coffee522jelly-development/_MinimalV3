@@ -53,22 +53,35 @@
   async function processContent() {
     if (!contentEl) return;
 
-    // Process Code Blocks only (Removed Mermaid)
-    const preBlocks = contentEl.querySelectorAll('pre:not([data-processed])');
-    for (const pre of preBlocks) {
+    // Process standard WP code blocks and raw pre tags
+    const blocks = contentEl.querySelectorAll('pre:not([data-processed]), .wp-block-code:not([data-processed])');
+
+    blocks.forEach((block) => {
+      const pre = block.tagName === 'PRE' ? block : block.querySelector('pre');
+      if (!pre || pre.getAttribute('data-processed')) return;
+
       const code = pre.querySelector('code');
-      if (!code) continue;
+      const content = (code ? code.textContent : pre.textContent) || "";
 
-      const content = (code.textContent || "").trim();
-      const langClass = Array.from(code.classList).find(c => c.startsWith('language-'));
-      let language = langClass ? langClass.replace('language-', '') : '';
+      // Determine language
+      let language = '';
+      if (code) {
+        const langClass = Array.from(code.classList).find(c => c.startsWith('language-'));
+        if (langClass) language = langClass.replace('language-', '');
+      }
 
+      // Mark as processed
+      block.setAttribute('data-processed', 'true');
       pre.setAttribute('data-processed', 'true');
+
+      // Hide original and mount custom component
       (pre as HTMLElement).style.display = 'none';
+      if (block !== pre) (block as HTMLElement).style.display = 'none';
+
       const container = document.createElement('div');
-      pre.parentNode?.insertBefore(container, pre);
-      mount(CodeBlock, { target: container, props: { code: content, language } });
-    }
+      block.parentNode?.insertBefore(container, block);
+      mount(CodeBlock, { target: container, props: { code: content.trim(), language } });
+    });
   }
 
   let processedContent = $derived(post ? post.content.rendered : "");
