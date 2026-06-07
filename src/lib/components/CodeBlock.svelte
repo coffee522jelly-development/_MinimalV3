@@ -41,8 +41,15 @@
   });
 
   let highlightedCode = $derived.by(() => {
-    const grammar = Prism.languages[language] || Prism.languages.clike || Prism.languages.javascript;
-    return Prism.highlight(code, grammar, language);
+    try {
+      const validLang = language && Prism.languages[language] ? language : 'javascript';
+      const grammar = Prism.languages[validLang];
+      if (!grammar) return code; // Fallback to raw text if no grammar found
+      return Prism.highlight(code, grammar, validLang);
+    } catch (e) {
+      console.error('Prism highlighting error:', e);
+      return code; // Return raw code on error to prevent UI crash
+    }
   });
 
   async function copyToClipboard() {

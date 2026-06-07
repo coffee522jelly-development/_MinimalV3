@@ -57,30 +57,34 @@
     const blocks = contentEl.querySelectorAll('pre:not([data-processed]), .wp-block-code:not([data-processed])');
 
     blocks.forEach((block) => {
-      const pre = block.tagName === 'PRE' ? block : block.querySelector('pre');
-      if (!pre || pre.getAttribute('data-processed')) return;
+      try {
+        const pre = block.tagName === 'PRE' ? block : block.querySelector('pre');
+        if (!pre || pre.getAttribute('data-processed')) return;
 
-      const code = pre.querySelector('code');
-      const content = (code ? code.textContent : pre.textContent) || "";
+        const code = pre.querySelector('code');
+        const content = (code ? code.textContent : pre.textContent) || "";
 
-      // Determine language
-      let language = '';
-      if (code) {
-        const langClass = Array.from(code.classList).find(c => c.startsWith('language-'));
-        if (langClass) language = langClass.replace('language-', '');
+        // Determine language
+        let language = '';
+        if (code) {
+          const langClass = Array.from(code.classList).find(c => (c as string).startsWith('language-'));
+          if (langClass) language = (langClass as string).replace('language-', '');
+        }
+
+        // Mark as processed
+        block.setAttribute('data-processed', 'true');
+        pre.setAttribute('data-processed', 'true');
+
+        // Hide original and mount custom component
+        (pre as HTMLElement).style.display = 'none';
+        if (block !== pre) (block as HTMLElement).style.display = 'none';
+
+        const container = document.createElement('div');
+        block.parentNode?.insertBefore(container, block);
+        mount(CodeBlock, { target: container, props: { code: content.trim(), language } });
+      } catch (e) {
+        console.error('Error processing code block:', e);
       }
-
-      // Mark as processed
-      block.setAttribute('data-processed', 'true');
-      pre.setAttribute('data-processed', 'true');
-
-      // Hide original and mount custom component
-      (pre as HTMLElement).style.display = 'none';
-      if (block !== pre) (block as HTMLElement).style.display = 'none';
-
-      const container = document.createElement('div');
-      block.parentNode?.insertBefore(container, block);
-      mount(CodeBlock, { target: container, props: { code: content.trim(), language } });
     });
   }
 
