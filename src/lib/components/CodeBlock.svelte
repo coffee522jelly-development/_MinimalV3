@@ -56,15 +56,29 @@
   let fontSize = $derived(settings?.code_block?.font_size || '14');
 </script>
 
-<div class="my-6 overflow-hidden rounded-lg border shadow-xl not-prose" style="background-color: {bgColor}; color: #f4f4f5;">
-  <div class="flex items-center justify-between border-b border-white/10 bg-black/20 px-4 py-2">
-    <div class="flex items-center gap-2">
-      <div class="flex gap-1.5"><div class="h-3 w-3 rounded-full bg-red-500/80"></div><div class="h-3 w-3 rounded-full bg-amber-500/80"></div><div class="h-3 w-3 rounded-full bg-emerald-500/80"></div></div>
-      <span class="ml-2 text-xs font-medium text-zinc-400 font-mono capitalize">{language === 'javascript' && !code.includes('console.log') ? 'code' : language}</span>
+<div class="my-8 overflow-hidden rounded-xl border border-white/10 shadow-2xl not-prose" style="background-color: {bgColor}; color: #f4f4f5;">
+  <div class="flex items-center justify-between bg-gradient-to-b from-white/10 to-transparent px-4 py-3">
+    <div class="flex items-center gap-3">
+      <div class="flex gap-2">
+        <div class="h-3 w-3 rounded-full bg-[#ff5f56] shadow-sm"></div>
+        <div class="h-3 w-3 rounded-full bg-[#ffbd2e] shadow-sm"></div>
+        <div class="h-3 w-3 rounded-full bg-[#27c93f] shadow-sm"></div>
+      </div>
+      <span class="ml-2 text-[11px] font-bold text-zinc-400 font-mono tracking-wider uppercase opacity-80">
+        {language || 'code'}
+      </span>
     </div>
-    <Button variant="ghost" size="icon" class="h-8 w-8 text-zinc-400 hover:text-white" onclick={copyToClipboard}>
-      {#if copied}<Check class="h-4 w-4 text-emerald-500" />{:else}<Copy class="h-4 w-4" />{/if}
-    </Button>
+    <div class="flex items-center">
+      <Button variant="ghost" size="icon" class="h-8 px-2 w-auto text-zinc-400 hover:text-white hover:bg-white/10 flex items-center gap-1.5 transition-all active:scale-95" onclick={copyToClipboard}>
+        {#if copied}
+          <Check class="h-3.5 w-3.5 text-emerald-400" />
+          <span class="text-[10px] font-bold text-emerald-400 uppercase">Copied!</span>
+        {:else}
+          <Copy class="h-3.5 w-3.5" />
+          <span class="text-[10px] font-bold uppercase">Copy</span>
+        {/if}
+      </Button>
+    </div>
   </div>
 
   <div class="relative overflow-x-auto p-4 font-mono leading-relaxed" style="font-size: {fontSize}px;">
