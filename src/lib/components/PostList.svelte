@@ -6,6 +6,7 @@
   import { List, Columns, Grid3X3, Clock, Tag, Folder } from '@lucide/svelte';
   import StickyNote from './StickyNote.svelte';
   import DeveloperCalendar from './DeveloperCalendar.svelte';
+  import LazyImage from './LazyImage.svelte';
   import { t, type Language } from '$lib/i18n';
   import { getRestUrl } from '$lib/api';
 
@@ -104,7 +105,19 @@
           {#each filteredPosts as post}
             <article class="group border rounded-lg overflow-hidden bg-card hover:shadow-md transition-shadow">
               <a href="/{post.slug}">
-                {#if post.featured_image_url}<div class="aspect-video overflow-hidden"><img src={post.featured_image_url} alt="" class="w-full h-full object-cover transition-transform group-hover:scale-105" /></div>{:else}<div class="aspect-video bg-muted flex items-center justify-center"><span class="text-muted-foreground">No Image</span></div>{/if}
+                {#if post.featured_image_url}
+                  <div class="aspect-video overflow-hidden">
+                    <LazyImage
+                      src={post.featured_image_url}
+                      alt={post.title.rendered}
+                      class="w-full h-full transition-transform group-hover:scale-105"
+                    />
+                  </div>
+                {:else}
+                  <div class="aspect-video bg-muted flex items-center justify-center">
+                    <span class="text-muted-foreground">No Image</span>
+                  </div>
+                {/if}
                 <div class="p-4">
                   <h3 class="text-xl font-bold mb-2 line-clamp-2">{@html post.title.rendered}</h3>
                   <div class="flex items-center justify-between text-xs text-muted-foreground mt-4">
