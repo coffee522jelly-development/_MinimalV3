@@ -11,5 +11,16 @@ export default defineConfig({
   },
   build: {
     manifest: true,
+    cssCodeSplit: true,
+    reportCompressedSize: false,
+    rollupOptions: {
+      output: {
+        manualChunks: {
+          'vendor-ui': ['@lucide/svelte', 'clsx', 'tailwind-merge'],
+          'vendor-prism': ['prismjs'],
+          'vendor-date': ['date-fns'],
+        }
+      }
+    }
   }
 })

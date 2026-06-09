@@ -4,7 +4,7 @@
   import { Button } from './ui/button';
   import { cn } from '$lib/utils';
   import { t, type Language } from '$lib/i18n';
-  import { getRestUrl } from '$lib/api';
+  import { getRestUrl, fetchWithCache } from '$lib/api';
 
   let isDark = $state(false);
   let isMobileMenuOpen = $state(false);
@@ -20,12 +20,12 @@
     if (isDark) document.documentElement.classList.add('dark');
 
     try {
-      const [mRes, sRes] = await Promise.all([
-        fetch(getRestUrl('me/v1/menu')),
-        fetch(getRestUrl('me/v1/settings'))
+      const [mItems, sData] = await Promise.all([
+        fetchWithCache(getRestUrl('me/v1/menu')),
+        fetchWithCache(getRestUrl('me/v1/settings'))
       ]);
-      menuItems = await mRes.json();
-      settings = await sRes.json();
+      menuItems = mItems;
+      settings = sData;
     } catch (e) {
       console.error(e);
     }
