@@ -17,8 +17,7 @@
       </div>
     {/if}
     <div class="flex-1">
-      <h1 class="text-3xl font-bold">{@html post.title.rendered}</h1>
-      {#if meta._me_app_subtitle}<p class="text-xl text-muted-foreground mb-4">{meta._me_app_subtitle}</p>{/if}
+      {#if meta._me_app_subtitle}<p class="text-2xl font-bold mb-4">{meta._me_app_subtitle}</p>{/if}
       <div class="flex flex-wrap gap-3 mt-6">
         {#if meta._me_app_link_web}<a href={meta._me_app_link_web}><Button><Globe class="h-4 w-4 mr-2" /> {t('website', lang)}</Button></a>{/if}
         {#if meta._me_app_link_github}<a href={meta._me_app_link_github}><Button variant="outline">{t('github', lang)}</Button></a>{/if}
