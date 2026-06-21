@@ -119,7 +119,9 @@
 
         <header class="mb-10 max-w-3xl">
           {#if post.categories_data}<CategoryBadges categories={post.categories_data} class="mb-6" />{/if}
-          <h1 class="text-4xl md:text-5xl font-bold mb-6">{@html post.title.rendered}</h1>
+          {#if post.meta?._me_template_type !== 'app'}
+            <h1 class="text-4xl md:text-5xl font-bold mb-6">{@html post.title.rendered}</h1>
+          {/if}
           <div class="flex flex-wrap items-center gap-x-8 gap-y-4 text-sm text-muted-foreground border-b pb-6">
             <div class="flex items-center gap-2"><Calendar class="h-4 w-4" /><span>{t('published', lang)}: {format(new Date(post.date), 'yyyy.MM.dd')}</span></div>
             <div class="flex items-center gap-2"><Calendar class="h-4 w-4" /><span>{t('updated', lang)}: {format(new Date(post.modified), 'yyyy.MM.dd')}</span></div>
