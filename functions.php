@@ -30,7 +30,37 @@ add_action( 'after_setup_theme', 'minimal_engineer_setup' );
 /**
  * Enqueue scripts and styles.
  */
+/**
+ * Helper to get font family details.
+ */
+function minimal_engineer_get_fonts() {
+    return array(
+        'inter'         => array( 'name' => 'Inter (Modern Sans)', 'family' => '"Inter", sans-serif', 'google' => 'Inter:wght@400;500;700' ),
+        'noto_sans_jp'  => array( 'name' => 'Noto Sans JP (Standard)', 'family' => '"Noto Sans JP", sans-serif', 'google' => 'Noto+Sans+JP:wght@400;500;700' ),
+        'plus_jakarta'  => array( 'name' => 'Plus Jakarta Sans (Minimal)', 'family' => '"Plus Jakarta Sans", sans-serif', 'google' => 'Plus+Jakarta+Sans:wght@400;500;700' ),
+        'outfit'        => array( 'name' => 'Outfit (Geometric)', 'family' => '"Outfit", sans-serif', 'google' => 'Outfit:wght@400;500;700' ),
+        'manrope'       => array( 'name' => 'Manrope (Modern)', 'family' => '"Manrope", sans-serif', 'google' => 'Manrope:wght@400;500;700' ),
+        'jetbrains'     => array( 'name' => 'JetBrains Mono (Developer)', 'family' => '"JetBrains Mono", monospace', 'google' => 'JetBrains+Mono:wght@400;700' ),
+        'fira_code'     => array( 'name' => 'Fira Code (Developer)', 'family' => '"Fira Code", monospace', 'google' => 'Fira+Code:wght@400;700' ),
+        'ibm_plex_mono' => array( 'name' => 'IBM Plex Mono (Industrial)', 'family' => '"IBM Plex Mono", monospace', 'google' => 'IBM+Plex+Mono:wght@400;700' ),
+        'space_mono'    => array( 'name' => 'Space Mono (Unique)', 'family' => '"Space Mono", monospace', 'google' => 'Space+Mono:wght@400;700' ),
+        'noto_serif_jp' => array( 'name' => 'Noto Serif JP (Elegant)', 'family' => '"Noto Serif JP", serif', 'google' => 'Noto+Serif+JP:wght@400;700' ),
+        'playfair'      => array( 'name' => 'Playfair Display (Serif)', 'family' => '"Playfair Display", serif', 'google' => 'Playfair+Display:wght@400;700' ),
+        'lora'          => array( 'name' => 'Lora (Modern Serif)', 'family' => '"Lora", serif', 'google' => 'Lora:wght@400;700' ),
+        'm_plus_1p'     => array( 'name' => 'M PLUS 1p (Clean JP)', 'family' => '"M PLUS 1p", sans-serif', 'google' => 'M+PLUS+1p:wght@400;500;700' ),
+        'zen_kaku'      => array( 'name' => 'Zen Kaku Gothic (Minimal JP)', 'family' => '"Zen Kaku Gothic New", sans-serif', 'google' => 'Zen+Kaku+Gothic+New:wght@400;500;700' ),
+        'shippori'      => array( 'name' => 'Shippori Mincho (JP Serif)', 'family' => '"Shippori Mincho", serif', 'google' => 'Shippori+Mincho:wght@400;700' ),
+        'biz_ud'        => array( 'name' => 'BIZ UD Gothic (Professional)', 'family' => '"BIZ UD Gothic", sans-serif', 'google' => 'BIZ+UDGothic:wght@400;700' ),
+    );
+}
+
 function minimal_engineer_scripts() {
+    $font_key = get_theme_mod( 'me_font_family', 'noto_sans_jp' );
+    $fonts = minimal_engineer_get_fonts();
+    if ( isset( $fonts[$font_key] ) ) {
+        wp_enqueue_style( 'minimal-engineer-google-fonts', 'https://fonts.googleapis.com/css2?family=' . $fonts[$font_key]['google'] . '&display=swap', array(), null );
+    }
+
     $manifest_path = get_template_directory() . '/dist/.vite/manifest.json';
 
     if ( file_exists( $manifest_path ) ) {
@@ -55,6 +85,23 @@ function minimal_engineer_scripts() {
     }
 }
 add_action( 'wp_enqueue_scripts', 'minimal_engineer_scripts' );
+
+/**
+ * Add custom CSS variables to the head.
+ */
+function minimal_engineer_custom_styles() {
+    $font_key = get_theme_mod( 'me_font_family', 'noto_sans_jp' );
+    $fonts = minimal_engineer_get_fonts();
+    $family = isset( $fonts[$font_key] ) ? $fonts[$font_key]['family'] : '"Noto Sans JP", sans-serif';
+    ?>
+    <style id="minimal-engineer-custom-css">
+        :root {
+            --main-font-family: <?php echo $family; ?>;
+        }
+    </style>
+    <?php
+}
+add_action( 'wp_head', 'minimal_engineer_custom_styles' );
 
 /**
  * Add type="module" to the script tag.
@@ -291,6 +338,12 @@ function minimal_engineer_customize_register( $wp_customize ) {
     $wp_customize->add_setting( 'me_logo_text', array( 'default' => 'Minimal Engineer', 'transport' => 'refresh' ) );
     $wp_customize->add_control( 'me_logo_text', array( 'label' => $labels['logo_text'], 'section' => 'me_branding', 'type' => 'text' ) );
 
+    $wp_customize->add_setting( 'me_font_family', array( 'default' => 'noto_sans_jp', 'transport' => 'refresh' ) );
+    $fonts = minimal_engineer_get_fonts();
+    $font_choices = array();
+    foreach ( $fonts as $k => $f ) { $font_choices[$k] = $f['name']; }
+    $wp_customize->add_control( 'me_font_family', array( 'label' => $is_ja ? 'メインフォント' : 'Main Font Family', 'section' => 'me_branding', 'type' => 'select', 'choices' => $font_choices ) );
+
     $wp_customize->add_section( 'me_layout', array( 'title' => $labels['layout'], 'priority' => 32 ) );
     $wp_customize->add_setting( 'me_default_columns', array( 'default' => '1', 'transport' => 'refresh' ) );
     $wp_customize->add_control( 'me_default_columns', array( 'label' => $labels['def_columns'], 'section' => 'me_layout', 'type' => 'select', 'choices' => array( '1' => '1 Column', '2' => '2 Columns', '4' => '4 Columns' ) ) );
@@ -378,7 +431,11 @@ add_action( 'rest_api_init', function() {
                     if ($post) { $fab_pages[] = array( 'title' => $post->post_title, 'url' => str_replace( home_url(), '', get_permalink($page_id) ) ); }
                 }
             }
-            return array( 'language' => get_theme_mod( 'me_language', 'en' ), 'logo_text' => get_theme_mod( 'me_logo_text', 'Minimal Engineer' ), 'default_columns' => (int) get_theme_mod( 'me_default_columns', 1 ), 'primary_color' => get_theme_mod( 'me_primary_color', '#18181b' ), 'code_block' => array( 'bg_color' => get_theme_mod( 'me_code_bg', '#09090b' ), 'font_size' => get_theme_mod( 'me_code_font_size', '14' ) ), 'labels' => array( 'categories' => get_theme_mod( 'me_label_categories', '' ), 'toc' => get_theme_mod( 'me_label_toc', '' ), 'article_info' => get_theme_mod( 'me_label_article_info', '' ), 'reading_time' => get_theme_mod( 'me_label_reading_time', '' ) ), 'fab' => array( 'show_contact' => (bool) get_theme_mod( 'me_fab_show_contact', true ), 'pages' => $fab_pages ), 'widgets' => array( 'sticky_note' => get_theme_mod( 'me_sticky_note_text', '' ), 'sticky_note_color' => get_theme_mod( 'me_sticky_note_color', 'yellow' ), 'show_calendar' => (bool) get_theme_mod( 'me_show_calendar', true ) ), 'sns' => array( 'github' => get_theme_mod( 'me_sns_github' ), 'x' => get_theme_mod( 'me_sns_x' ), 'youtube' => get_theme_mod( 'me_sns_youtube' ), 'qiita' => get_theme_mod( 'me_sns_qiita' ), 'zenn' => get_theme_mod( 'me_sns_zenn' ) ) );
+            $font_key = get_theme_mod( 'me_font_family', 'noto_sans_jp' );
+            $fonts = minimal_engineer_get_fonts();
+            $font_family = isset( $fonts[$font_key] ) ? $fonts[$font_key]['family'] : '"Noto Sans JP", sans-serif';
+
+            return array( 'language' => get_theme_mod( 'me_language', 'en' ), 'font_family' => $font_family, 'logo_text' => get_theme_mod( 'me_logo_text', 'Minimal Engineer' ), 'default_columns' => (int) get_theme_mod( 'me_default_columns', 1 ), 'primary_color' => get_theme_mod( 'me_primary_color', '#18181b' ), 'code_block' => array( 'bg_color' => get_theme_mod( 'me_code_bg', '#09090b' ), 'font_size' => get_theme_mod( 'me_code_font_size', '14' ) ), 'labels' => array( 'categories' => get_theme_mod( 'me_label_categories', '' ), 'toc' => get_theme_mod( 'me_label_toc', '' ), 'article_info' => get_theme_mod( 'me_label_article_info', '' ), 'reading_time' => get_theme_mod( 'me_label_reading_time', '' ) ), 'fab' => array( 'show_contact' => (bool) get_theme_mod( 'me_fab_show_contact', true ), 'pages' => $fab_pages ), 'widgets' => array( 'sticky_note' => get_theme_mod( 'me_sticky_note_text', '' ), 'sticky_note_color' => get_theme_mod( 'me_sticky_note_color', 'yellow' ), 'show_calendar' => (bool) get_theme_mod( 'me_show_calendar', true ) ), 'sns' => array( 'github' => get_theme_mod( 'me_sns_github' ), 'x' => get_theme_mod( 'me_sns_x' ), 'youtube' => get_theme_mod( 'me_sns_youtube' ), 'qiita' => get_theme_mod( 'me_sns_qiita' ), 'zenn' => get_theme_mod( 'me_sns_zenn' ) ) );
         },
         'permission_callback' => '__return_true'
     ) );
