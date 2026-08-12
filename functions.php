@@ -335,8 +335,6 @@ function minimal_engineer_customize_register( $wp_customize ) {
     $wp_customize->add_control( 'me_language', array( 'label' => $labels['language'], 'section' => 'me_general', 'type' => 'select', 'choices' => array( 'en' => 'English', 'ja' => '日本語' ) ) );
 
     $wp_customize->add_section( 'me_branding', array( 'title' => $labels['branding'], 'priority' => 30 ) );
-    $wp_customize->add_setting( 'me_logo_text', array( 'default' => 'Minimal Engineer', 'transport' => 'refresh' ) );
-    $wp_customize->add_control( 'me_logo_text', array( 'label' => $labels['logo_text'], 'section' => 'me_branding', 'type' => 'text' ) );
 
     $wp_customize->add_setting( 'me_font_family', array( 'default' => 'noto_sans_jp', 'transport' => 'refresh' ) );
     $fonts = minimal_engineer_get_fonts();
@@ -370,6 +368,8 @@ function minimal_engineer_customize_register( $wp_customize ) {
     }
 
     $wp_customize->add_section( 'me_widgets', array( 'title' => $labels['widgets'], 'priority' => 37 ) );
+    $wp_customize->add_setting( 'me_show_sticky_note', array( 'default' => true, 'transport' => 'refresh' ) );
+    $wp_customize->add_control( 'me_show_sticky_note', array( 'label' => $is_ja ? '付箋を表示する' : 'Show Sticky Note', 'section' => 'me_widgets', 'type' => 'checkbox' ) );
     $wp_customize->add_setting( 'me_sticky_note_text', array( 'default' => '', 'transport' => 'refresh' ) );
     $wp_customize->add_control( 'me_sticky_note_text', array( 'label' => $labels['sticky_text'], 'section' => 'me_widgets', 'type' => 'textarea' ) );
     $wp_customize->add_setting( 'me_sticky_note_color', array( 'default' => 'yellow', 'transport' => 'refresh' ) );
@@ -435,7 +435,7 @@ add_action( 'rest_api_init', function() {
             $fonts = minimal_engineer_get_fonts();
             $font_family = isset( $fonts[$font_key] ) ? $fonts[$font_key]['family'] : '"Noto Sans JP", sans-serif';
 
-            return array( 'language' => get_theme_mod( 'me_language', 'en' ), 'font_family' => $font_family, 'logo_text' => get_theme_mod( 'me_logo_text', 'Minimal Engineer' ), 'default_columns' => (int) get_theme_mod( 'me_default_columns', 1 ), 'primary_color' => get_theme_mod( 'me_primary_color', '#18181b' ), 'code_block' => array( 'bg_color' => get_theme_mod( 'me_code_bg', '#09090b' ), 'font_size' => get_theme_mod( 'me_code_font_size', '14' ) ), 'labels' => array( 'categories' => get_theme_mod( 'me_label_categories', '' ), 'toc' => get_theme_mod( 'me_label_toc', '' ), 'article_info' => get_theme_mod( 'me_label_article_info', '' ), 'reading_time' => get_theme_mod( 'me_label_reading_time', '' ) ), 'fab' => array( 'show_contact' => (bool) get_theme_mod( 'me_fab_show_contact', true ), 'pages' => $fab_pages ), 'widgets' => array( 'sticky_note' => get_theme_mod( 'me_sticky_note_text', '' ), 'sticky_note_color' => get_theme_mod( 'me_sticky_note_color', 'yellow' ), 'show_calendar' => (bool) get_theme_mod( 'me_show_calendar', true ) ), 'sns' => array( 'github' => get_theme_mod( 'me_sns_github' ), 'x' => get_theme_mod( 'me_sns_x' ), 'youtube' => get_theme_mod( 'me_sns_youtube' ), 'qiita' => get_theme_mod( 'me_sns_qiita' ), 'zenn' => get_theme_mod( 'me_sns_zenn' ) ) );
+            return array( 'language' => get_theme_mod( 'me_language', 'en' ), 'font_family' => $font_family, 'logo_text' => get_bloginfo( 'name' ), 'default_columns' => (int) get_theme_mod( 'me_default_columns', 1 ), 'primary_color' => get_theme_mod( 'me_primary_color', '#18181b' ), 'code_block' => array( 'bg_color' => get_theme_mod( 'me_code_bg', '#09090b' ), 'font_size' => get_theme_mod( 'me_code_font_size', '14' ) ), 'labels' => array( 'categories' => get_theme_mod( 'me_label_categories', '' ), 'toc' => get_theme_mod( 'me_label_toc', '' ), 'article_info' => get_theme_mod( 'me_label_article_info', '' ), 'reading_time' => get_theme_mod( 'me_label_reading_time', '' ) ), 'fab' => array( 'show_contact' => (bool) get_theme_mod( 'me_fab_show_contact', true ), 'pages' => $fab_pages ), 'widgets' => array( 'show_sticky_note' => (bool) get_theme_mod( 'me_show_sticky_note', true ), 'sticky_note' => get_theme_mod( 'me_sticky_note_text', '' ), 'sticky_note_color' => get_theme_mod( 'me_sticky_note_color', 'yellow' ), 'show_calendar' => (bool) get_theme_mod( 'me_show_calendar', true ) ), 'sns' => array( 'github' => get_theme_mod( 'me_sns_github' ), 'x' => get_theme_mod( 'me_sns_x' ), 'youtube' => get_theme_mod( 'me_sns_youtube' ), 'qiita' => get_theme_mod( 'me_sns_qiita' ), 'zenn' => get_theme_mod( 'me_sns_zenn' ) ) );
         },
         'permission_callback' => '__return_true'
     ) );
