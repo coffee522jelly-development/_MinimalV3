@@ -328,6 +328,11 @@ function minimal_engineer_customize_register( $wp_customize ) {
         'colors' => $is_ja ? 'テーマカラー' : 'Theme Colors',
         'primary' => $is_ja ? 'プライマリーカラー' : 'Primary Color',
         'sns' => $is_ja ? 'SNS リンク' : 'SNS Links',
+        'typography' => $is_ja ? 'タイポグラフィ' : 'Typography',
+        'header_font_size' => $is_ja ? '記事タイトルのフォントサイズ (px)' : 'Post Title Font Size (px)',
+        'h1_font_size' => $is_ja ? 'H1 フォントサイズ (px)' : 'H1 Font Size (px)',
+        'h2_font_size' => $is_ja ? 'H2 フォントサイズ (px)' : 'H2 Font Size (px)',
+        'h3_font_size' => $is_ja ? 'H3 フォントサイズ (px)' : 'H3 Font Size (px)',
     );
 
     $wp_customize->add_section( 'me_general', array( 'title' => $labels['general'], 'priority' => 20 ) );
@@ -343,6 +348,16 @@ function minimal_engineer_customize_register( $wp_customize ) {
     $font_choices = array();
     foreach ( $fonts as $k => $f ) { $font_choices[$k] = $f['name']; }
     $wp_customize->add_control( 'me_font_family', array( 'label' => $is_ja ? 'メインフォント' : 'Main Font Family', 'section' => 'me_branding', 'type' => 'select', 'choices' => $font_choices ) );
+
+    $wp_customize->add_section( 'me_typography', array( 'title' => $labels['typography'], 'priority' => 31 ) );
+    $wp_customize->add_setting( 'me_header_font_size', array( 'default' => '36', 'transport' => 'refresh' ) );
+    $wp_customize->add_control( 'me_header_font_size', array( 'label' => $labels['header_font_size'], 'section' => 'me_typography', 'type' => 'number' ) );
+    $wp_customize->add_setting( 'me_h1_font_size', array( 'default' => '36', 'transport' => 'refresh' ) );
+    $wp_customize->add_control( 'me_h1_font_size', array( 'label' => $labels['h1_font_size'], 'section' => 'me_typography', 'type' => 'number' ) );
+    $wp_customize->add_setting( 'me_h2_font_size', array( 'default' => '30', 'transport' => 'refresh' ) );
+    $wp_customize->add_control( 'me_h2_font_size', array( 'label' => $labels['h2_font_size'], 'section' => 'me_typography', 'type' => 'number' ) );
+    $wp_customize->add_setting( 'me_h3_font_size', array( 'default' => '24', 'transport' => 'refresh' ) );
+    $wp_customize->add_control( 'me_h3_font_size', array( 'label' => $labels['h3_font_size'], 'section' => 'me_typography', 'type' => 'number' ) );
 
     $wp_customize->add_section( 'me_layout', array( 'title' => $labels['layout'], 'priority' => 32 ) );
     $wp_customize->add_setting( 'me_default_columns', array( 'default' => '1', 'transport' => 'refresh' ) );
@@ -435,7 +450,24 @@ add_action( 'rest_api_init', function() {
             $fonts = minimal_engineer_get_fonts();
             $font_family = isset( $fonts[$font_key] ) ? $fonts[$font_key]['family'] : '"Noto Sans JP", sans-serif';
 
-            return array( 'language' => get_theme_mod( 'me_language', 'en' ), 'font_family' => $font_family, 'logo_text' => get_theme_mod( 'me_logo_text', 'Minimal Engineer' ), 'default_columns' => (int) get_theme_mod( 'me_default_columns', 1 ), 'primary_color' => get_theme_mod( 'me_primary_color', '#18181b' ), 'code_block' => array( 'bg_color' => get_theme_mod( 'me_code_bg', '#09090b' ), 'font_size' => get_theme_mod( 'me_code_font_size', '14' ) ), 'labels' => array( 'categories' => get_theme_mod( 'me_label_categories', '' ), 'toc' => get_theme_mod( 'me_label_toc', '' ), 'article_info' => get_theme_mod( 'me_label_article_info', '' ), 'reading_time' => get_theme_mod( 'me_label_reading_time', '' ) ), 'fab' => array( 'show_contact' => (bool) get_theme_mod( 'me_fab_show_contact', true ), 'pages' => $fab_pages ), 'widgets' => array( 'sticky_note' => get_theme_mod( 'me_sticky_note_text', '' ), 'sticky_note_color' => get_theme_mod( 'me_sticky_note_color', 'yellow' ), 'show_calendar' => (bool) get_theme_mod( 'me_show_calendar', true ) ), 'sns' => array( 'github' => get_theme_mod( 'me_sns_github' ), 'x' => get_theme_mod( 'me_sns_x' ), 'youtube' => get_theme_mod( 'me_sns_youtube' ), 'qiita' => get_theme_mod( 'me_sns_qiita' ), 'zenn' => get_theme_mod( 'me_sns_zenn' ) ) );
+            return array(
+                'language' => get_theme_mod( 'me_language', 'en' ),
+                'font_family' => $font_family,
+                'logo_text' => get_theme_mod( 'me_logo_text', 'Minimal Engineer' ),
+                'typography' => array(
+                    'header_size' => get_theme_mod( 'me_header_font_size', '36' ),
+                    'h1_size' => get_theme_mod( 'me_h1_font_size', '36' ),
+                    'h2_size' => get_theme_mod( 'me_h2_font_size', '30' ),
+                    'h3_size' => get_theme_mod( 'me_h3_font_size', '24' )
+                ),
+                'default_columns' => (int) get_theme_mod( 'me_default_columns', 1 ),
+                'primary_color' => get_theme_mod( 'me_primary_color', '#18181b' ),
+                'code_block' => array( 'bg_color' => get_theme_mod( 'me_code_bg', '#09090b' ), 'font_size' => get_theme_mod( 'me_code_font_size', '14' ) ),
+                'labels' => array( 'categories' => get_theme_mod( 'me_label_categories', '' ), 'toc' => get_theme_mod( 'me_label_toc', '' ), 'article_info' => get_theme_mod( 'me_label_article_info', '' ), 'reading_time' => get_theme_mod( 'me_label_reading_time', '' ) ),
+                'fab' => array( 'show_contact' => (bool) get_theme_mod( 'me_fab_show_contact', true ), 'pages' => $fab_pages ),
+                'widgets' => array( 'sticky_note' => get_theme_mod( 'me_sticky_note_text', '' ), 'sticky_note_color' => get_theme_mod( 'me_sticky_note_color', 'yellow' ), 'show_calendar' => (bool) get_theme_mod( 'me_show_calendar', true ) ),
+                'sns' => array( 'github' => get_theme_mod( 'me_sns_github' ), 'x' => get_theme_mod( 'me_sns_x' ), 'youtube' => get_theme_mod( 'me_sns_youtube' ), 'qiita' => get_theme_mod( 'me_sns_qiita' ), 'zenn' => get_theme_mod( 'me_sns_zenn' ) )
+            );
         },
         'permission_callback' => '__return_true'
     ) );
