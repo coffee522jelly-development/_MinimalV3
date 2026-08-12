@@ -93,10 +93,16 @@ function minimal_engineer_custom_styles() {
     $font_key = get_theme_mod( 'me_font_family', 'noto_sans_jp' );
     $fonts = minimal_engineer_get_fonts();
     $family = isset( $fonts[$font_key] ) ? $fonts[$font_key]['family'] : '"Noto Sans JP", sans-serif';
+    $h1_size = get_theme_mod( 'me_h1_font_size', '' );
+    $h2_size = get_theme_mod( 'me_h2_font_size', '' );
+    $h3_size = get_theme_mod( 'me_h3_font_size', '' );
     ?>
     <style id="minimal-engineer-custom-css">
         :root {
             --main-font-family: <?php echo $family; ?>;
+            <?php if ( $h1_size ) : ?>--h1-size: <?php echo esc_html( $h1_size ); ?>;<?php endif; ?>
+            <?php if ( $h2_size ) : ?>--h2-size: <?php echo esc_html( $h2_size ); ?>;<?php endif; ?>
+            <?php if ( $h3_size ) : ?>--h3-size: <?php echo esc_html( $h3_size ); ?>;<?php endif; ?>
         }
     </style>
     <?php
@@ -340,8 +346,6 @@ function minimal_engineer_customize_register( $wp_customize ) {
     $wp_customize->add_control( 'me_language', array( 'label' => $labels['language'], 'section' => 'me_general', 'type' => 'select', 'choices' => array( 'en' => 'English', 'ja' => '日本語' ) ) );
 
     $wp_customize->add_section( 'me_branding', array( 'title' => $labels['branding'], 'priority' => 30 ) );
-    $wp_customize->add_setting( 'me_logo_text', array( 'default' => 'Minimal Engineer', 'transport' => 'refresh' ) );
-    $wp_customize->add_control( 'me_logo_text', array( 'label' => $labels['logo_text'], 'section' => 'me_branding', 'type' => 'text' ) );
 
     $wp_customize->add_setting( 'me_font_family', array( 'default' => 'noto_sans_jp', 'transport' => 'refresh' ) );
     $fonts = minimal_engineer_get_fonts();
@@ -362,6 +366,15 @@ function minimal_engineer_customize_register( $wp_customize ) {
     $wp_customize->add_section( 'me_layout', array( 'title' => $labels['layout'], 'priority' => 32 ) );
     $wp_customize->add_setting( 'me_default_columns', array( 'default' => '1', 'transport' => 'refresh' ) );
     $wp_customize->add_control( 'me_default_columns', array( 'label' => $labels['def_columns'], 'section' => 'me_layout', 'type' => 'select', 'choices' => array( '1' => '1 Column', '2' => '2 Columns', '4' => '4 Columns' ) ) );
+
+    $wp_customize->add_setting( 'me_h1_font_size', array( 'default' => '', 'transport' => 'refresh' ) );
+    $wp_customize->add_control( 'me_h1_font_size', array( 'label' => $is_ja ? 'H1フォントサイズ (px/rem等)' : 'H1 Font Size (px/rem)', 'section' => 'me_layout', 'type' => 'text' ) );
+
+    $wp_customize->add_setting( 'me_h2_font_size', array( 'default' => '', 'transport' => 'refresh' ) );
+    $wp_customize->add_control( 'me_h2_font_size', array( 'label' => $is_ja ? 'H2フォントサイズ (px/rem等)' : 'H2 Font Size (px/rem)', 'section' => 'me_layout', 'type' => 'text' ) );
+
+    $wp_customize->add_setting( 'me_h3_font_size', array( 'default' => '', 'transport' => 'refresh' ) );
+    $wp_customize->add_control( 'me_h3_font_size', array( 'label' => $is_ja ? 'H3フォントサイズ (px/rem等)' : 'H3 Font Size (px/rem)', 'section' => 'me_layout', 'type' => 'text' ) );
 
     $wp_customize->add_section( 'me_code_block', array( 'title' => $labels['code_block'], 'priority' => 33 ) );
     $wp_customize->add_setting( 'me_code_bg', array( 'default' => '#09090b', 'transport' => 'refresh' ) );
@@ -385,6 +398,8 @@ function minimal_engineer_customize_register( $wp_customize ) {
     }
 
     $wp_customize->add_section( 'me_widgets', array( 'title' => $labels['widgets'], 'priority' => 37 ) );
+    $wp_customize->add_setting( 'me_show_sticky_note', array( 'default' => true, 'transport' => 'refresh' ) );
+    $wp_customize->add_control( 'me_show_sticky_note', array( 'label' => $is_ja ? '付箋を表示する' : 'Show Sticky Note', 'section' => 'me_widgets', 'type' => 'checkbox' ) );
     $wp_customize->add_setting( 'me_sticky_note_text', array( 'default' => '', 'transport' => 'refresh' ) );
     $wp_customize->add_control( 'me_sticky_note_text', array( 'label' => $labels['sticky_text'], 'section' => 'me_widgets', 'type' => 'textarea' ) );
     $wp_customize->add_setting( 'me_sticky_note_color', array( 'default' => 'yellow', 'transport' => 'refresh' ) );
