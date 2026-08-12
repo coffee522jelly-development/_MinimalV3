@@ -95,6 +95,10 @@
 
   let lang = $derived(settings?.language as Language || 'en');
   let primaryColor = $derived(settings?.primary_color || '#18181b');
+  let headerSize = $derived(settings?.typography?.header_size || '36');
+  let h1Size = $derived(settings?.typography?.h1_size || '36');
+  let h2Size = $derived(settings?.typography?.h2_size || '30');
+  let h3Size = $derived(settings?.typography?.h3_size || '24');
 </script>
 
 {#if loading}
@@ -105,7 +109,7 @@
   </div>
 {:else if post}
   <SEO title={post.title.rendered} type="article" />
-  <article class="w-full max-w-[1600px] mx-auto px-4 md:px-8 py-12" style="--primary-color: {primaryColor}">
+  <article class="w-full max-w-[1600px] mx-auto px-4 md:px-8 py-12" style="--primary-color: {primaryColor}; --header-size: {headerSize}px; --h1-size: {h1Size}px; --h2-size: {h2Size}px; --h3-size: {h3Size}px;">
     <div class="flex flex-col xl:flex-row gap-12 relative">
       <aside class="hidden xl:block w-72 flex-shrink-0">
         <div class="sticky top-24 space-y-12">
@@ -120,7 +124,7 @@
         <header class="mb-10 max-w-3xl">
           {#if post.categories_data}<CategoryBadges categories={post.categories_data} class="mb-6" />{/if}
           {#if post.meta?._me_template_type !== 'app'}
-            <h1 class="text-4xl md:text-5xl font-bold mb-6">{@html post.title.rendered}</h1>
+            <h1 class="font-bold mb-6" style="font-size: var(--header-size);">{@html post.title.rendered}</h1>
           {/if}
           <div class="flex flex-wrap items-center gap-x-8 gap-y-4 text-sm text-muted-foreground border-b pb-6">
             <div class="flex items-center gap-2"><Calendar class="h-4 w-4" /><span>{t('published', lang)}: {format(new Date(post.date), 'yyyy.MM.dd')}</span></div>
@@ -163,5 +167,7 @@
 {/if}
 
 <style>
-  :global(.article-content h2) { border-bottom: 2px solid var(--primary-color); padding-bottom: 0.5rem; margin-top: 3rem; }
+  :global(.article-content h1) { font-size: var(--h1-size); }
+  :global(.article-content h2) { font-size: var(--h2-size); border-bottom: 2px solid var(--primary-color); padding-bottom: 0.5rem; margin-top: 3rem; }
+  :global(.article-content h3) { font-size: var(--h3-size); }
 </style>
