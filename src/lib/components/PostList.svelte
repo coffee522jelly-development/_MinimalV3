@@ -119,7 +119,7 @@
                   </div>
                 {/if}
                 <div class="p-4">
-                  <h3 class="text-xl font-bold mb-2 line-clamp-2">{@html post.title.rendered}</h3>
+                  <h3 class="font-bold mb-2 line-clamp-2">{@html post.title.rendered}</h3>
                   <div class="flex items-center justify-between text-xs text-muted-foreground mt-4">
                     <span>{format(new Date(post.date), 'yyyy.MM.dd')}</span>
                     <span>{getReadingTime(post.content.rendered)} min</span>
