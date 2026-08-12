@@ -9,7 +9,7 @@
   let isDark = $state(false);
   let isMobileMenuOpen = $state(false);
   let menuItems = $state<any[]>([]);
-  let settings = $state<any>({ logo_text: 'Minimal Engineer', language: 'en' });
+  let settings = $state<any>({ logo_text: window.wpData?.siteName || 'Minimal Engineer', language: 'en' });
   let openMenus = $state<Record<number, boolean>>({});
 
   onMount(async () => {
@@ -48,7 +48,7 @@
 <header class="sticky top-0 z-40 w-full border-b bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60">
   <div class="container flex h-16 items-center justify-between">
     <div class="flex items-center gap-4">
-      <a href="/" class="text-xl font-bold">{settings?.logo_text || 'Minimal Engineer'}</a>
+      <a href="/" class="text-xl font-bold">{settings?.logo_text || window.wpData?.siteName || 'Minimal Engineer'}</a>
 
       <nav class="hidden md:flex items-center gap-6 ml-6 text-sm font-medium">
         <a href="/" class="transition-colors hover:text-primary">{t('home', lang)}</a>
