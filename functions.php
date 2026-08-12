@@ -96,13 +96,18 @@ function minimal_engineer_custom_styles() {
     $h1_size = get_theme_mod( 'me_h1_font_size', '' );
     $h2_size = get_theme_mod( 'me_h2_font_size', '' );
     $h3_size = get_theme_mod( 'me_h3_font_size', '' );
+
+    $format_size = function($size) {
+        if (!$size) return '';
+        return is_numeric($size) ? $size . 'px' : $size;
+    };
     ?>
     <style id="minimal-engineer-custom-css">
         :root {
             --main-font-family: <?php echo $family; ?>;
-            <?php if ( $h1_size ) : ?>--h1-size: <?php echo esc_html( $h1_size ); ?>;<?php endif; ?>
-            <?php if ( $h2_size ) : ?>--h2-size: <?php echo esc_html( $h2_size ); ?>;<?php endif; ?>
-            <?php if ( $h3_size ) : ?>--h3-size: <?php echo esc_html( $h3_size ); ?>;<?php endif; ?>
+            <?php if ( $h1_size ) : ?>--h1-size: <?php echo esc_html( $format_size($h1_size) ); ?>;<?php endif; ?>
+            <?php if ( $h2_size ) : ?>--h2-size: <?php echo esc_html( $format_size($h2_size) ); ?>;<?php endif; ?>
+            <?php if ( $h3_size ) : ?>--h3-size: <?php echo esc_html( $format_size($h3_size) ); ?>;<?php endif; ?>
         }
     </style>
     <?php
@@ -355,26 +360,17 @@ function minimal_engineer_customize_register( $wp_customize ) {
 
     $wp_customize->add_section( 'me_typography', array( 'title' => $labels['typography'], 'priority' => 31 ) );
     $wp_customize->add_setting( 'me_header_font_size', array( 'default' => '36', 'transport' => 'refresh' ) );
-    $wp_customize->add_control( 'me_header_font_size', array( 'label' => $labels['header_font_size'], 'section' => 'me_typography', 'type' => 'number' ) );
+    $wp_customize->add_control( 'me_header_font_size', array( 'label' => $labels['header_font_size'], 'section' => 'me_typography', 'type' => 'text' ) );
     $wp_customize->add_setting( 'me_h1_font_size', array( 'default' => '36', 'transport' => 'refresh' ) );
-    $wp_customize->add_control( 'me_h1_font_size', array( 'label' => $labels['h1_font_size'], 'section' => 'me_typography', 'type' => 'number' ) );
+    $wp_customize->add_control( 'me_h1_font_size', array( 'label' => $labels['h1_font_size'], 'section' => 'me_typography', 'type' => 'text' ) );
     $wp_customize->add_setting( 'me_h2_font_size', array( 'default' => '30', 'transport' => 'refresh' ) );
-    $wp_customize->add_control( 'me_h2_font_size', array( 'label' => $labels['h2_font_size'], 'section' => 'me_typography', 'type' => 'number' ) );
+    $wp_customize->add_control( 'me_h2_font_size', array( 'label' => $labels['h2_font_size'], 'section' => 'me_typography', 'type' => 'text' ) );
     $wp_customize->add_setting( 'me_h3_font_size', array( 'default' => '24', 'transport' => 'refresh' ) );
-    $wp_customize->add_control( 'me_h3_font_size', array( 'label' => $labels['h3_font_size'], 'section' => 'me_typography', 'type' => 'number' ) );
+    $wp_customize->add_control( 'me_h3_font_size', array( 'label' => $labels['h3_font_size'], 'section' => 'me_typography', 'type' => 'text' ) );
 
     $wp_customize->add_section( 'me_layout', array( 'title' => $labels['layout'], 'priority' => 32 ) );
     $wp_customize->add_setting( 'me_default_columns', array( 'default' => '1', 'transport' => 'refresh' ) );
     $wp_customize->add_control( 'me_default_columns', array( 'label' => $labels['def_columns'], 'section' => 'me_layout', 'type' => 'select', 'choices' => array( '1' => '1 Column', '2' => '2 Columns', '4' => '4 Columns' ) ) );
-
-    $wp_customize->add_setting( 'me_h1_font_size', array( 'default' => '', 'transport' => 'refresh' ) );
-    $wp_customize->add_control( 'me_h1_font_size', array( 'label' => $is_ja ? 'H1フォントサイズ (px/rem等)' : 'H1 Font Size (px/rem)', 'section' => 'me_layout', 'type' => 'text' ) );
-
-    $wp_customize->add_setting( 'me_h2_font_size', array( 'default' => '', 'transport' => 'refresh' ) );
-    $wp_customize->add_control( 'me_h2_font_size', array( 'label' => $is_ja ? 'H2フォントサイズ (px/rem等)' : 'H2 Font Size (px/rem)', 'section' => 'me_layout', 'type' => 'text' ) );
-
-    $wp_customize->add_setting( 'me_h3_font_size', array( 'default' => '', 'transport' => 'refresh' ) );
-    $wp_customize->add_control( 'me_h3_font_size', array( 'label' => $is_ja ? 'H3フォントサイズ (px/rem等)' : 'H3 Font Size (px/rem)', 'section' => 'me_layout', 'type' => 'text' ) );
 
     $wp_customize->add_section( 'me_code_block', array( 'title' => $labels['code_block'], 'priority' => 33 ) );
     $wp_customize->add_setting( 'me_code_bg', array( 'default' => '#09090b', 'transport' => 'refresh' ) );
