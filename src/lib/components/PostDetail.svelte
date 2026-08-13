@@ -99,6 +99,11 @@
   let h1Size = $derived(settings?.typography?.h1_size || '36');
   let h2Size = $derived(settings?.typography?.h2_size || '30');
   let h3Size = $derived(settings?.typography?.h3_size || '24');
+
+  function getCSSSize(size: string | number) {
+    if (!size) return '';
+    return /^\d+(\.\d+)?$/.test(String(size)) ? `${size}px` : String(size);
+  }
 </script>
 
 {#if loading}
@@ -109,7 +114,7 @@
   </div>
 {:else if post}
   <SEO title={post.title.rendered} type="article" />
-  <article class="w-full max-w-[1600px] mx-auto px-4 md:px-8 py-12" style="--primary-color: {primaryColor}; --header-size: {headerSize}px; --h1-size: {h1Size}px; --h2-size: {h2Size}px; --h3-size: {h3Size}px;">
+  <article class="w-full max-w-[1600px] mx-auto px-4 md:px-8 py-12" style="--primary-color: {primaryColor}; --header-size: {getCSSSize(headerSize)}; --h1-size: {getCSSSize(h1Size)}; --h2-size: {getCSSSize(h2Size)}; --h3-size: {getCSSSize(h3Size)};">
     <div class="flex flex-col xl:flex-row gap-12 relative">
       <aside class="hidden xl:block w-72 flex-shrink-0">
         <div class="sticky top-24 space-y-12">

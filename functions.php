@@ -31,34 +31,66 @@ add_action( 'after_setup_theme', 'minimal_engineer_setup' );
  * Enqueue scripts and styles.
  */
 /**
- * Helper to get font family details.
+ * Helper to get font family details grouped by category.
  */
 function minimal_engineer_get_fonts() {
     return array(
-        'inter'         => array( 'name' => 'Inter (Modern Sans)', 'family' => '"Inter", sans-serif', 'google' => 'Inter:wght@400;500;700' ),
-        'noto_sans_jp'  => array( 'name' => 'Noto Sans JP (Standard)', 'family' => '"Noto Sans JP", sans-serif', 'google' => 'Noto+Sans+JP:wght@400;500;700' ),
-        'plus_jakarta'  => array( 'name' => 'Plus Jakarta Sans (Minimal)', 'family' => '"Plus Jakarta Sans", sans-serif', 'google' => 'Plus+Jakarta+Sans:wght@400;500;700' ),
-        'outfit'        => array( 'name' => 'Outfit (Geometric)', 'family' => '"Outfit", sans-serif', 'google' => 'Outfit:wght@400;500;700' ),
-        'manrope'       => array( 'name' => 'Manrope (Modern)', 'family' => '"Manrope", sans-serif', 'google' => 'Manrope:wght@400;500;700' ),
-        'jetbrains'     => array( 'name' => 'JetBrains Mono (Developer)', 'family' => '"JetBrains Mono", monospace', 'google' => 'JetBrains+Mono:wght@400;700' ),
-        'fira_code'     => array( 'name' => 'Fira Code (Developer)', 'family' => '"Fira Code", monospace', 'google' => 'Fira+Code:wght@400;700' ),
-        'ibm_plex_mono' => array( 'name' => 'IBM Plex Mono (Industrial)', 'family' => '"IBM Plex Mono", monospace', 'google' => 'IBM+Plex+Mono:wght@400;700' ),
-        'space_mono'    => array( 'name' => 'Space Mono (Unique)', 'family' => '"Space Mono", monospace', 'google' => 'Space+Mono:wght@400;700' ),
-        'noto_serif_jp' => array( 'name' => 'Noto Serif JP (Elegant)', 'family' => '"Noto Serif JP", serif', 'google' => 'Noto+Serif+JP:wght@400;700' ),
-        'playfair'      => array( 'name' => 'Playfair Display (Serif)', 'family' => '"Playfair Display", serif', 'google' => 'Playfair+Display:wght@400;700' ),
-        'lora'          => array( 'name' => 'Lora (Modern Serif)', 'family' => '"Lora", serif', 'google' => 'Lora:wght@400;700' ),
-        'm_plus_1p'     => array( 'name' => 'M PLUS 1p (Clean JP)', 'family' => '"M PLUS 1p", sans-serif', 'google' => 'M+PLUS+1p:wght@400;500;700' ),
-        'zen_kaku'      => array( 'name' => 'Zen Kaku Gothic (Minimal JP)', 'family' => '"Zen Kaku Gothic New", sans-serif', 'google' => 'Zen+Kaku+Gothic+New:wght@400;500;700' ),
-        'shippori'      => array( 'name' => 'Shippori Mincho (JP Serif)', 'family' => '"Shippori Mincho", serif', 'google' => 'Shippori+Mincho:wght@400;700' ),
-        'biz_ud'        => array( 'name' => 'BIZ UD Gothic (Professional)', 'family' => '"BIZ UD Gothic", sans-serif', 'google' => 'BIZ+UDGothic:wght@400;700' ),
+        'Sans-Serif' => array(
+            'inter'         => array( 'name' => 'Inter', 'family' => '"Inter", sans-serif', 'google' => 'Inter:wght@400;500;700' ),
+            'roboto'        => array( 'name' => 'Roboto', 'family' => '"Roboto", sans-serif', 'google' => 'Roboto:wght@400;500;700' ),
+            'open_sans'     => array( 'name' => 'Open Sans', 'family' => '"Open Sans", sans-serif', 'google' => 'Open+Sans:wght@400;500;700' ),
+            'lato'          => array( 'name' => 'Lato', 'family' => '"Lato", sans-serif', 'google' => 'Lato:wght@400;700' ),
+            'montserrat'    => array( 'name' => 'Montserrat', 'family' => '"Montserrat", sans-serif', 'google' => 'Montserrat:wght@400;500;700' ),
+            'poppins'       => array( 'name' => 'Poppins', 'family' => '"Poppins", sans-serif', 'google' => 'Poppins:wght@400;500;700' ),
+            'nunito'        => array( 'name' => 'Nunito', 'family' => '"Nunito", sans-serif', 'google' => 'Nunito:wght@400;500;700' ),
+            'plus_jakarta'  => array( 'name' => 'Plus Jakarta Sans', 'family' => '"Plus Jakarta Sans", sans-serif', 'google' => 'Plus+Jakarta+Sans:wght@400;500;700' ),
+            'outfit'        => array( 'name' => 'Outfit', 'family' => '"Outfit", sans-serif', 'google' => 'Outfit:wght@400;500;700' ),
+            'manrope'       => array( 'name' => 'Manrope', 'family' => '"Manrope", sans-serif', 'google' => 'Manrope:wght@400;500;700' ),
+        ),
+        'Serif' => array(
+            'merriweather'  => array( 'name' => 'Merriweather', 'family' => '"Merriweather", serif', 'google' => 'Merriweather:wght@400;700' ),
+            'pt_serif'      => array( 'name' => 'PT Serif', 'family' => '"PT Serif", serif', 'google' => 'PT+Serif:wght@400;700' ),
+            'playfair'      => array( 'name' => 'Playfair Display', 'family' => '"Playfair Display", serif', 'google' => 'Playfair+Display:wght@400;700' ),
+            'lora'          => array( 'name' => 'Lora', 'family' => '"Lora", serif', 'google' => 'Lora:wght@400;700' ),
+        ),
+        'Monospace' => array(
+            'jetbrains'     => array( 'name' => 'JetBrains Mono', 'family' => '"JetBrains Mono", monospace', 'google' => 'JetBrains+Mono:wght@400;700' ),
+            'fira_code'     => array( 'name' => 'Fira Code', 'family' => '"Fira Code", monospace', 'google' => 'Fira+Code:wght@400;700' ),
+            'ibm_plex_mono' => array( 'name' => 'IBM Plex Mono', 'family' => '"IBM Plex Mono", monospace', 'google' => 'IBM+Plex+Mono:wght@400;700' ),
+            'space_mono'    => array( 'name' => 'Space Mono', 'family' => '"Space Mono", monospace', 'google' => 'Space+Mono:wght@400;700' ),
+            'source_code_pro' => array( 'name' => 'Source Code Pro', 'family' => '"Source Code Pro", monospace', 'google' => 'Source+Code+Pro:wght@400;500;700' ),
+            'inconsolata'   => array( 'name' => 'Inconsolata', 'family' => '"Inconsolata", monospace', 'google' => 'Inconsolata:wght@400;700' ),
+        ),
+        'Japanese' => array(
+            'noto_sans_jp'  => array( 'name' => 'Noto Sans JP', 'family' => '"Noto Sans JP", sans-serif', 'google' => 'Noto+Sans+JP:wght@400;500;700' ),
+            'noto_serif_jp' => array( 'name' => 'Noto Serif JP', 'family' => '"Noto Serif JP", serif', 'google' => 'Noto+Serif+JP:wght@400;700' ),
+            'm_plus_1p'     => array( 'name' => 'M PLUS 1p', 'family' => '"M PLUS 1p", sans-serif', 'google' => 'M+PLUS+1p:wght@400;500;700' ),
+            'zen_kaku'      => array( 'name' => 'Zen Kaku Gothic New', 'family' => '"Zen Kaku Gothic New", sans-serif', 'google' => 'Zen+Kaku+Gothic+New:wght@400;500;700' ),
+            'zen_maru'      => array( 'name' => 'Zen Maru Gothic', 'family' => '"Zen Maru Gothic", sans-serif', 'google' => 'Zen+Maru+Gothic:wght@400;500;700' ),
+            'shippori'      => array( 'name' => 'Shippori Mincho', 'family' => '"Shippori Mincho", serif', 'google' => 'Shippori+Mincho:wght@400;700' ),
+            'biz_ud'        => array( 'name' => 'BIZ UD Gothic', 'family' => '"BIZ UD Gothic", sans-serif', 'google' => 'BIZ+UDGothic:wght@400;700' ),
+            'sawarabi_gothic' => array( 'name' => 'Sawarabi Gothic', 'family' => '"Sawarabi Gothic", sans-serif', 'google' => 'Sawarabi+Gothic' ),
+            'sawarabi_mincho' => array( 'name' => 'Sawarabi Mincho', 'family' => '"Sawarabi Mincho", serif', 'google' => 'Sawarabi+Mincho' ),
+            'yusei_magic'   => array( 'name' => 'Yusei Magic', 'family' => '"Yusei Magic", sans-serif', 'google' => 'Yusei+Magic' ),
+        ),
     );
+}
+
+function minimal_engineer_get_font_by_key($key) {
+    $fonts = minimal_engineer_get_fonts();
+    foreach ($fonts as $category => $category_fonts) {
+        if (isset($category_fonts[$key])) {
+            return $category_fonts[$key];
+        }
+    }
+    return null;
 }
 
 function minimal_engineer_scripts() {
     $font_key = get_theme_mod( 'me_font_family', 'noto_sans_jp' );
-    $fonts = minimal_engineer_get_fonts();
-    if ( isset( $fonts[$font_key] ) ) {
-        wp_enqueue_style( 'minimal-engineer-google-fonts', 'https://fonts.googleapis.com/css2?family=' . $fonts[$font_key]['google'] . '&display=swap', array(), null );
+    $font = minimal_engineer_get_font_by_key($font_key);
+    if ( $font ) {
+        wp_enqueue_style( 'minimal-engineer-google-fonts', 'https://fonts.googleapis.com/css2?family=' . $font['google'] . '&display=swap', array(), null );
     }
 
     $manifest_path = get_template_directory() . '/dist/.vite/manifest.json';
@@ -91,18 +123,23 @@ add_action( 'wp_enqueue_scripts', 'minimal_engineer_scripts' );
  */
 function minimal_engineer_custom_styles() {
     $font_key = get_theme_mod( 'me_font_family', 'noto_sans_jp' );
-    $fonts = minimal_engineer_get_fonts();
-    $family = isset( $fonts[$font_key] ) ? $fonts[$font_key]['family'] : '"Noto Sans JP", sans-serif';
+    $font = minimal_engineer_get_font_by_key($font_key);
+    $family = $font ? $font['family'] : '"Noto Sans JP", sans-serif';
     $h1_size = get_theme_mod( 'me_h1_font_size', '' );
     $h2_size = get_theme_mod( 'me_h2_font_size', '' );
     $h3_size = get_theme_mod( 'me_h3_font_size', '' );
+
+    $format_size = function($size) {
+        if (!$size) return '';
+        return is_numeric($size) ? $size . 'px' : $size;
+    };
     ?>
     <style id="minimal-engineer-custom-css">
         :root {
             --main-font-family: <?php echo $family; ?>;
-            <?php if ( $h1_size ) : ?>--h1-size: <?php echo esc_html( $h1_size ); ?>;<?php endif; ?>
-            <?php if ( $h2_size ) : ?>--h2-size: <?php echo esc_html( $h2_size ); ?>;<?php endif; ?>
-            <?php if ( $h3_size ) : ?>--h3-size: <?php echo esc_html( $h3_size ); ?>;<?php endif; ?>
+            <?php if ( $h1_size ) : ?>--h1-size: <?php echo esc_html( $format_size($h1_size) ); ?>;<?php endif; ?>
+            <?php if ( $h2_size ) : ?>--h2-size: <?php echo esc_html( $format_size($h2_size) ); ?>;<?php endif; ?>
+            <?php if ( $h3_size ) : ?>--h3-size: <?php echo esc_html( $format_size($h3_size) ); ?>;<?php endif; ?>
         }
     </style>
     <?php
@@ -350,31 +387,27 @@ function minimal_engineer_customize_register( $wp_customize ) {
     $wp_customize->add_setting( 'me_font_family', array( 'default' => 'noto_sans_jp', 'transport' => 'refresh' ) );
     $fonts = minimal_engineer_get_fonts();
     $font_choices = array();
-    foreach ( $fonts as $k => $f ) { $font_choices[$k] = $f['name']; }
+    foreach ( $fonts as $category => $category_fonts ) {
+        $category_label = $is_ja ? '【' . $category . '】' : '[' . $category . ']';
+        foreach ($category_fonts as $k => $f) {
+            $font_choices[$k] = $category_label . ' ' . $f['name'];
+        }
+    }
     $wp_customize->add_control( 'me_font_family', array( 'label' => $is_ja ? 'メインフォント' : 'Main Font Family', 'section' => 'me_branding', 'type' => 'select', 'choices' => $font_choices ) );
 
     $wp_customize->add_section( 'me_typography', array( 'title' => $labels['typography'], 'priority' => 31 ) );
     $wp_customize->add_setting( 'me_header_font_size', array( 'default' => '36', 'transport' => 'refresh' ) );
-    $wp_customize->add_control( 'me_header_font_size', array( 'label' => $labels['header_font_size'], 'section' => 'me_typography', 'type' => 'number' ) );
+    $wp_customize->add_control( 'me_header_font_size', array( 'label' => $labels['header_font_size'], 'section' => 'me_typography', 'type' => 'text' ) );
     $wp_customize->add_setting( 'me_h1_font_size', array( 'default' => '36', 'transport' => 'refresh' ) );
-    $wp_customize->add_control( 'me_h1_font_size', array( 'label' => $labels['h1_font_size'], 'section' => 'me_typography', 'type' => 'number' ) );
+    $wp_customize->add_control( 'me_h1_font_size', array( 'label' => $labels['h1_font_size'], 'section' => 'me_typography', 'type' => 'text' ) );
     $wp_customize->add_setting( 'me_h2_font_size', array( 'default' => '30', 'transport' => 'refresh' ) );
-    $wp_customize->add_control( 'me_h2_font_size', array( 'label' => $labels['h2_font_size'], 'section' => 'me_typography', 'type' => 'number' ) );
+    $wp_customize->add_control( 'me_h2_font_size', array( 'label' => $labels['h2_font_size'], 'section' => 'me_typography', 'type' => 'text' ) );
     $wp_customize->add_setting( 'me_h3_font_size', array( 'default' => '24', 'transport' => 'refresh' ) );
-    $wp_customize->add_control( 'me_h3_font_size', array( 'label' => $labels['h3_font_size'], 'section' => 'me_typography', 'type' => 'number' ) );
+    $wp_customize->add_control( 'me_h3_font_size', array( 'label' => $labels['h3_font_size'], 'section' => 'me_typography', 'type' => 'text' ) );
 
     $wp_customize->add_section( 'me_layout', array( 'title' => $labels['layout'], 'priority' => 32 ) );
     $wp_customize->add_setting( 'me_default_columns', array( 'default' => '1', 'transport' => 'refresh' ) );
     $wp_customize->add_control( 'me_default_columns', array( 'label' => $labels['def_columns'], 'section' => 'me_layout', 'type' => 'select', 'choices' => array( '1' => '1 Column', '2' => '2 Columns', '4' => '4 Columns' ) ) );
-
-    $wp_customize->add_setting( 'me_h1_font_size', array( 'default' => '', 'transport' => 'refresh' ) );
-    $wp_customize->add_control( 'me_h1_font_size', array( 'label' => $is_ja ? 'H1フォントサイズ (px/rem等)' : 'H1 Font Size (px/rem)', 'section' => 'me_layout', 'type' => 'text' ) );
-
-    $wp_customize->add_setting( 'me_h2_font_size', array( 'default' => '', 'transport' => 'refresh' ) );
-    $wp_customize->add_control( 'me_h2_font_size', array( 'label' => $is_ja ? 'H2フォントサイズ (px/rem等)' : 'H2 Font Size (px/rem)', 'section' => 'me_layout', 'type' => 'text' ) );
-
-    $wp_customize->add_setting( 'me_h3_font_size', array( 'default' => '', 'transport' => 'refresh' ) );
-    $wp_customize->add_control( 'me_h3_font_size', array( 'label' => $is_ja ? 'H3フォントサイズ (px/rem等)' : 'H3 Font Size (px/rem)', 'section' => 'me_layout', 'type' => 'text' ) );
 
     $wp_customize->add_section( 'me_code_block', array( 'title' => $labels['code_block'], 'priority' => 33 ) );
     $wp_customize->add_setting( 'me_code_bg', array( 'default' => '#09090b', 'transport' => 'refresh' ) );
@@ -462,8 +495,8 @@ add_action( 'rest_api_init', function() {
                 }
             }
             $font_key = get_theme_mod( 'me_font_family', 'noto_sans_jp' );
-            $fonts = minimal_engineer_get_fonts();
-            $font_family = isset( $fonts[$font_key] ) ? $fonts[$font_key]['family'] : '"Noto Sans JP", sans-serif';
+            $font = minimal_engineer_get_font_by_key($font_key);
+            $font_family = $font ? $font['family'] : '"Noto Sans JP", sans-serif';
 
             return array(
                 'language' => get_theme_mod( 'me_language', 'en' ),
